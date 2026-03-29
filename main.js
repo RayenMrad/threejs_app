@@ -2,6 +2,14 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { ARButton } from "three/addons/webxr/ARButton.js";
 
+// ─── Renderer ────────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+// ─── Scene & Camera ──────────────────────────────────────────
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
   70,
@@ -10,20 +18,19 @@ const camera = new THREE.PerspectiveCamera(
   20,
 );
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.xr.enabled = true;
-document.body.appendChild(renderer.domElement);
+// ─── Lighting ────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0xffffff, 2.0));
+const sun = new THREE.DirectionalLight(0xffffff, 2.0);
+sun.position.set(2, 4, 2);
+scene.add(sun);
 
-scene.add(new THREE.AmbientLight(0xffffff, 2));
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-dirLight.position.set(3, 6, 4);
-scene.add(dirLight);
-
+// ─── Status UI ───────────────────────────────────────────────
 const statusEl = document.getElementById("status");
-const setStatus = (msg) => (statusEl.textContent = msg);
+const setStatus = (msg) => {
+  statusEl.textContent = msg;
+};
 
+// ─── AR Button ───────────────────────────────────────────────
 document.body.appendChild(
   ARButton.createButton(renderer, {
     requiredFeatures: ["hit-test"],
@@ -31,174 +38,189 @@ document.body.appendChild(
     domOverlay: { root: document.body },
   }),
 );
-setStatus('Tap "Start AR" to begin');
 
-// ── Reticle ──────────────────────────────────────────────────
+// ─── Reticle (placement ring on floor) ───────────────────────
 const reticle = new THREE.Mesh(
-  new THREE.RingGeometry(0.08, 0.13, 32).rotateX(-Math.PI / 2),
-  new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide }),
+  new THREE.RingGeometry(0.1, 0.15, 32).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }),
 );
 reticle.matrixAutoUpdate = false;
 reticle.visible = false;
 scene.add(reticle);
 
-// ── KEY FIX: store last hit position updated every frame ─────
-const lastHitPosition = new THREE.Vector3();
-let hasHit = false;
+// ─── Hit Test State ──────────────────────────────────────────
+let hitTestSource = null;
+let hitTestSourceRequested = false;
 
-// ── Model ────────────────────────────────────────────────────
+// Last confirmed floor hit — set every render frame
+const floorPosition = new THREE.Vector3();
+let floorFound = false;
+
+// ─── Model State ─────────────────────────────────────────────
 const loader = new GLTFLoader();
-let currentModelUrl = "/models/chaise.glb";
-const urlParams = new URLSearchParams(window.location.search);
-const modelParam = urlParams.get("model");
-if (modelParam) currentModelUrl = modelParam;
+const placedObjects = [];
 
-let placedObjects = [];
-let cachedGltf = null;
-let computedScale = 1;
-let computedFloorOffset = 0;
-const TARGET_HEIGHT = 0.9; // metres
+let gltfScene = null; // raw loaded scene (never scaled)
+let modelScale = 1; // uniform scale to apply at placement
+let modelLift = 0; // y offset so model bottom sits on floor
 
-function preloadModel(url) {
-  setStatus("Loading...");
-  cachedGltf = null;
-  hasHit = false;
+// Read ?model= param from URL
+const modelUrl =
+  new URLSearchParams(window.location.search).get("model") ||
+  "/models/chaise.glb";
+
+// ─── Load Model ───────────────────────────────────────────────
+function loadModel(url) {
+  gltfScene = null;
+  floorFound = false;
+  setStatus("Loading model...");
 
   loader.load(
     url,
     (gltf) => {
-      cachedGltf = gltf;
+      // Work on a temporary clone to measure — never modify the original
+      const probe = gltf.scene.clone(true);
 
-      // Measure raw bounding box
-      const tempMesh = gltf.scene.clone(true);
-      const box = new THREE.Box3().setFromObject(tempMesh);
+      // Add to scene temporarily so matrixWorld gets computed correctly
+      scene.add(probe);
+      probe.updateMatrixWorld(true);
+
+      // Get world-space bounding box
+      const box = new THREE.Box3().setFromObject(probe);
+      scene.remove(probe);
+
       const size = new THREE.Vector3();
       box.getSize(size);
-      const maxDim = Math.max(size.x, size.y, size.z);
-      computedScale = TARGET_HEIGHT / maxDim;
 
-      // Measure floor offset at computed scale
-      const floorGroup = new THREE.Group();
-      floorGroup.scale.setScalar(computedScale);
-      const tempMesh2 = gltf.scene.clone(true);
-      floorGroup.add(tempMesh2);
+      // Use Y (height) as the reference — chair should be ~0.9m tall
+      const rawHeight = size.y;
+      const TARGET = 0.9; // metres
+      modelScale = TARGET / rawHeight;
 
-      // Force matrix world update manually
-      floorGroup.position.set(0, 0, 0);
-      floorGroup.updateMatrix();
-      floorGroup.updateMatrixWorld(true);
+      // Floor lift = distance from model origin to its bottom face, scaled
+      // box.min.y is the lowest point in world space when the probe is at origin
+      modelLift = -box.min.y * modelScale;
 
-      const scaledBox = new THREE.Box3();
-      // traverse and expand box manually to respect group scale
-      floorGroup.traverse((child) => {
-        if (child.isMesh) {
-          child.geometry.computeBoundingBox();
-          const geomBox = child.geometry.boundingBox.clone();
-          geomBox.applyMatrix4(child.matrixWorld);
-          scaledBox.union(geomBox);
-        }
-      });
-
-      computedFloorOffset = scaledBox.isEmpty() ? 0 : -scaledBox.min.y;
+      // Store original for cloning at placement time
+      gltfScene = gltf.scene;
 
       console.log(
-        `maxDim=${maxDim.toFixed(3)} scale=${computedScale.toFixed(6)} floorOffset=${computedFloorOffset.toFixed(6)}`,
+        `size(raw): x=${size.x.toFixed(2)} y=${size.y.toFixed(2)} z=${size.z.toFixed(2)}`,
       );
-      setStatus("Point at floor → tap to place");
+      console.log(
+        `scale: ${modelScale.toFixed(6)}  lift: ${modelLift.toFixed(4)}`,
+      );
+
+      setStatus("Move camera over floor, then tap");
     },
     undefined,
     (err) => {
-      setStatus("Error loading model");
+      setStatus("Failed to load model");
       console.error(err);
     },
   );
 }
 
-preloadModel(currentModelUrl);
+loadModel(modelUrl);
 
-// ── Place on SELECT (controller button / screen tap in XR) ───
-// Using renderer.xr session select event — fires INSIDE the XR frame
+// ─── Place Model (called from session "select" inside XR frame) ──
+function placeModel() {
+  if (!floorFound || !gltfScene) return;
+
+  // Fresh clone each placement
+  const clone = gltfScene.clone(true);
+
+  // Wrap in a Group — this is the object we position/scale
+  const group = new THREE.Group();
+  group.add(clone);
+
+  // Apply scale to the group
+  group.scale.setScalar(modelScale);
+
+  // Place on floor: x,z from hit test, y = floor y + lift
+  group.position.set(
+    floorPosition.x,
+    floorPosition.y + modelLift,
+    floorPosition.z,
+  );
+
+  // Rotate to face camera (horizontal only)
+  const cam = renderer.xr.getCamera();
+  const camWorld = new THREE.Vector3();
+  cam.getWorldPosition(camWorld);
+  group.lookAt(camWorld.x, group.position.y, camWorld.z);
+
+  scene.add(group);
+  placedObjects.push(group);
+  setStatus("Placed! Tap floor again to add more.");
+}
+
+// ─── XR Session Events ────────────────────────────────────────
 renderer.xr.addEventListener("sessionstart", () => {
   const session = renderer.xr.getSession();
-  session.addEventListener("select", () => {
-    if (!hasHit || !cachedGltf) return;
 
-    const pivot = new THREE.Group();
-    pivot.scale.setScalar(computedScale);
-    pivot.add(cachedGltf.scene.clone(true));
+  // "select" fires inside the XR frame — safe to use floorPosition here
+  session.addEventListener("select", placeModel);
 
-    // Use lastHitPosition — updated every frame inside XR
-    pivot.position.set(
-      lastHitPosition.x,
-      lastHitPosition.y + computedFloorOffset,
-      lastHitPosition.z,
-    );
-
-    // Face toward camera
-    const camPos = new THREE.Vector3();
-    renderer.xr.getCamera().getWorldPosition(camPos);
-    pivot.lookAt(camPos.x, pivot.position.y, camPos.z);
-
-    scene.add(pivot);
-    placedObjects.push(pivot);
-    setStatus("Placed! Tap again to add more.");
+  session.addEventListener("end", () => {
+    hitTestSource = null;
+    hitTestSourceRequested = false;
+    floorFound = false;
   });
 });
 
-// ── Flutter JS Bridge ─────────────────────────────────────────
-window.setModel = (url) => preloadModel(url);
+// ─── Flutter JS Bridge ────────────────────────────────────────
+window.setModel = (url) => loadModel(url);
+
 window.removeLastObject = () => {
   if (placedObjects.length) {
     scene.remove(placedObjects.pop());
-    setStatus("Removed");
+    setStatus("Removed last item");
   }
 };
+
 window.clearAll = () => {
   placedObjects.forEach((o) => scene.remove(o));
-  placedObjects = [];
+  placedObjects.length = 0;
   setStatus("Cleared");
 };
 
-// ── Render loop ───────────────────────────────────────────────
-let hitTestSource = null;
-let hitTestSourceRequested = false;
-
+// ─── Render Loop ─────────────────────────────────────────────
 renderer.setAnimationLoop((_, frame) => {
   if (frame) {
     const refSpace = renderer.xr.getReferenceSpace();
     const session = renderer.xr.getSession();
 
+    // Request hit-test source once per session
     if (!hitTestSourceRequested) {
-      session.requestReferenceSpace("viewer").then((vs) => {
-        session.requestHitTestSource({ space: vs }).then((src) => {
-          hitTestSource = src;
+      session.requestReferenceSpace("viewer").then((viewerSpace) => {
+        session.requestHitTestSource({ space: viewerSpace }).then((source) => {
+          hitTestSource = source;
         });
-      });
-      session.addEventListener("end", () => {
-        hitTestSourceRequested = false;
-        hitTestSource = null;
-        cachedGltf = null;
-        hasHit = false;
       });
       hitTestSourceRequested = true;
     }
 
+    // Update reticle + floor position every frame
     if (hitTestSource) {
       const hits = frame.getHitTestResults(hitTestSource);
       if (hits.length > 0) {
         const pose = hits[0].getPose(refSpace);
         const m = pose.transform.matrix;
 
-        // Update reticle
+        // Update reticle visual
         reticle.visible = true;
         reticle.matrix.fromArray(m);
 
-        // ── Store hit position every frame ──
-        lastHitPosition.set(m[12], m[13], m[14]);
-        hasHit = true;
+        // Store floor position — column-major: translation is at [12],[13],[14]
+        floorPosition.set(m[12], m[13], m[14]);
+        floorFound = true;
+
+        if (gltfScene) setStatus("Tap to place furniture");
       } else {
         reticle.visible = false;
-        hasHit = false;
+        floorFound = false;
+        if (gltfScene) setStatus("Move camera over floor...");
       }
     }
   }
@@ -206,6 +228,7 @@ renderer.setAnimationLoop((_, frame) => {
   renderer.render(scene, camera);
 });
 
+// ─── Resize ───────────────────────────────────────────────────
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
