@@ -36,7 +36,7 @@ const arButton = ARButton.createButton(renderer, {
 document.body.appendChild(arButton);
 setStatus('Tap "Start AR" to begin');
 
-// ── Reticle ──────────────────────────────
+// ── Reticle ──────────────────────────────────────────
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 
@@ -48,7 +48,7 @@ reticle.matrixAutoUpdate = false;
 reticle.visible = false;
 scene.add(reticle);
 
-// ── Model ────────────────────────────────
+// ── Model loading ────────────────────────────────────
 const loader = new GLTFLoader();
 let currentModelUrl = "/models/chaise.glb";
 
@@ -67,45 +67,43 @@ function preloadModel(url) {
     (gltf) => {
       const model = gltf.scene;
 
-      // ── Step 1: measure raw bounding box ──
-      const box = new THREE.Box3().setFromObject(model);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const maxDim = Math.max(size.x, size.y, size.z);
+      // Step 1: measure raw bounding box (no scale applied yet)
+      const rawBox = new THREE.Box3().setFromObject(model);
+      const rawSize = new THREE.Vector3();
+      rawBox.getSize(rawSize);
+      const maxDim = Math.max(rawSize.x, rawSize.y, rawSize.z);
 
-      console.log("Raw model size:", size, "maxDim:", maxDim);
+      // Step 2: compute scale so the largest dimension = 0.9m (chair height)
+      // Works for any unit (cm, mm, m) the GLB was exported in
+      const TARGET = 0.9; // meters — realistic chair height
+      const scale = TARGET / maxDim;
 
-      // ── Step 2: force scale to exactly 0.9m tall ──
-      // This works regardless of whether the GLB is in cm, mm, or m
-      const TARGET_HEIGHT_METERS = 0.9; // realistic chair height
-      const scale = TARGET_HEIGHT_METERS / maxDim;
+      // Step 3: apply scale
       model.scale.set(scale, scale, scale);
 
-      console.log("Applied scale:", scale);
-
-      // ── Step 3: measure bottom after scaling ──
-      // Re-compute bounding box with the new scale applied
+      // Step 4: force matrix update THEN measure floor
       model.updateMatrixWorld(true);
       const scaledBox = new THREE.Box3().setFromObject(model);
-      // floorOffset = how much to raise model so its bottom sits at y=0
-      floorOffset = -scaledBox.min.y;
+      floorOffset = -scaledBox.min.y; // lift so bottom = 0
 
-      console.log("Floor offset:", floorOffset);
+      console.log(
+        `GLB raw maxDim: ${maxDim}, scale applied: ${scale}, floorOffset: ${floorOffset}`,
+      );
 
       modelTemplate = model;
-      setStatus("Point camera at floor — tap to place!");
+      setStatus("Point at floor → tap to place");
     },
     undefined,
-    (error) => {
+    (err) => {
       setStatus("Error loading model");
-      console.error(error);
+      console.error(err);
     },
   );
 }
 
 preloadModel(currentModelUrl);
 
-// ── Place on tap ─────────────────────────
+// ── Place on tap ──────────────────────────────────────
 renderer.domElement.addEventListener("click", () => {
   if (!reticle.visible || !modelTemplate) return;
 
@@ -114,10 +112,9 @@ renderer.domElement.addEventListener("click", () => {
   const reticlePos = new THREE.Vector3();
   reticlePos.setFromMatrixPosition(reticle.matrix);
 
-  // Place at floor level — floorOffset lifts model so bottom = floor
   clone.position.set(reticlePos.x, reticlePos.y + floorOffset, reticlePos.z);
 
-  // Face the model toward the camera
+  // Face toward camera
   const camPos = new THREE.Vector3();
   renderer.xr.getCamera().getWorldPosition(camPos);
   clone.lookAt(camPos.x, clone.position.y, camPos.z);
@@ -127,27 +124,25 @@ renderer.domElement.addEventListener("click", () => {
   setStatus("Placed! Tap again to add more.");
 });
 
-// ── Flutter JS Bridge ────────────────────
+// ── Flutter JS Bridge ─────────────────────────────────
 window.setModel = function (url) {
   modelTemplate = null;
   floorOffset = 0;
   preloadModel(url);
 };
-
 window.removeLastObject = function () {
   if (placedObjects.length > 0) {
     scene.remove(placedObjects.pop());
     setStatus("Removed");
   }
 };
-
 window.clearAll = function () {
   placedObjects.forEach((o) => scene.remove(o));
   placedObjects = [];
   setStatus("Cleared");
 };
 
-// ── Render loop ──────────────────────────
+// ── Render loop ───────────────────────────────────────
 renderer.setAnimationLoop((timestamp, frame) => {
   if (frame) {
     const referenceSpace = renderer.xr.getReferenceSpace();
