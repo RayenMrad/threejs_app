@@ -17,10 +17,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 2);
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(1, 2, 1);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+directionalLight.position.set(1, 3, 2);
 scene.add(directionalLight);
 
 const statusEl = document.getElementById("status");
@@ -36,27 +36,25 @@ const arButton = ARButton.createButton(renderer, {
 document.body.appendChild(arButton);
 setStatus('Tap "Start AR" to begin');
 
-// Reticle
+// ── Reticle ──────────────────────────────
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 
 const reticle = new THREE.Mesh(
-  new THREE.RingGeometry(0.08, 0.1, 32).rotateX(-Math.PI / 2),
-  new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }),
+  new THREE.RingGeometry(0.08, 0.13, 32).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide }),
 );
 reticle.matrixAutoUpdate = false;
 reticle.visible = false;
 scene.add(reticle);
 
-// Model
+// ── Model ────────────────────────────────
 const loader = new GLTFLoader();
 let currentModelUrl = "/models/chaise.glb";
 
 const urlParams = new URLSearchParams(window.location.search);
 const modelParam = urlParams.get("model");
-if (modelParam) {
-  currentModelUrl = modelParam;
-}
+if (modelParam) currentModelUrl = modelParam;
 
 let placedObjects = [];
 let modelTemplate = null;
@@ -69,25 +67,35 @@ function preloadModel(url) {
     (gltf) => {
       const model = gltf.scene;
 
-      // Scale to 0.6m real-world height
+      // ── Step 1: measure raw bounding box ──
       const box = new THREE.Box3().setFromObject(model);
       const size = new THREE.Vector3();
       box.getSize(size);
       const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = 0.6 / maxDim;
+
+      console.log("Raw model size:", size, "maxDim:", maxDim);
+
+      // ── Step 2: force scale to exactly 0.9m tall ──
+      // This works regardless of whether the GLB is in cm, mm, or m
+      const TARGET_HEIGHT_METERS = 0.9; // realistic chair height
+      const scale = TARGET_HEIGHT_METERS / maxDim;
       model.scale.set(scale, scale, scale);
 
-      // Measure bottom of model after scaling so we can sit it on the floor
+      console.log("Applied scale:", scale);
+
+      // ── Step 3: measure bottom after scaling ──
+      // Re-compute bounding box with the new scale applied
+      model.updateMatrixWorld(true);
       const scaledBox = new THREE.Box3().setFromObject(model);
+      // floorOffset = how much to raise model so its bottom sits at y=0
       floorOffset = -scaledBox.min.y;
 
+      console.log("Floor offset:", floorOffset);
+
       modelTemplate = model;
-      setStatus("Model ready — point at floor and tap!");
+      setStatus("Point camera at floor — tap to place!");
     },
-    (progress) => {
-      const pct = Math.round((progress.loaded / progress.total) * 100);
-      setStatus(`Loading ${pct}%`);
-    },
+    undefined,
     (error) => {
       setStatus("Error loading model");
       console.error(error);
@@ -97,26 +105,30 @@ function preloadModel(url) {
 
 preloadModel(currentModelUrl);
 
-// Place on tap
+// ── Place on tap ─────────────────────────
 renderer.domElement.addEventListener("click", () => {
-  if (reticle.visible && modelTemplate) {
-    const clone = modelTemplate.clone(true);
+  if (!reticle.visible || !modelTemplate) return;
 
-    const position = new THREE.Vector3();
-    position.setFromMatrixPosition(reticle.matrix);
+  const clone = modelTemplate.clone(true);
 
-    // y = reticle floor position + lift so bottom of model touches floor
-    clone.position.set(position.x, position.y + floorOffset, position.z);
+  const reticlePos = new THREE.Vector3();
+  reticlePos.setFromMatrixPosition(reticle.matrix);
 
-    scene.add(clone);
-    placedObjects.push(clone);
-    setStatus("Placed! Tap again to add more.");
-  }
+  // Place at floor level — floorOffset lifts model so bottom = floor
+  clone.position.set(reticlePos.x, reticlePos.y + floorOffset, reticlePos.z);
+
+  // Face the model toward the camera
+  const camPos = new THREE.Vector3();
+  renderer.xr.getCamera().getWorldPosition(camPos);
+  clone.lookAt(camPos.x, clone.position.y, camPos.z);
+
+  scene.add(clone);
+  placedObjects.push(clone);
+  setStatus("Placed! Tap again to add more.");
 });
 
-// JS Bridge for Flutter
+// ── Flutter JS Bridge ────────────────────
 window.setModel = function (url) {
-  currentModelUrl = url;
   modelTemplate = null;
   floorOffset = 0;
   preloadModel(url);
@@ -125,17 +137,17 @@ window.setModel = function (url) {
 window.removeLastObject = function () {
   if (placedObjects.length > 0) {
     scene.remove(placedObjects.pop());
-    setStatus("Removed last object");
+    setStatus("Removed");
   }
 };
 
 window.clearAll = function () {
-  placedObjects.forEach((obj) => scene.remove(obj));
+  placedObjects.forEach((o) => scene.remove(o));
   placedObjects = [];
-  setStatus("All cleared");
+  setStatus("Cleared");
 };
 
-// Render loop
+// ── Render loop ──────────────────────────
 renderer.setAnimationLoop((timestamp, frame) => {
   if (frame) {
     const referenceSpace = renderer.xr.getReferenceSpace();
@@ -143,8 +155,8 @@ renderer.setAnimationLoop((timestamp, frame) => {
 
     if (!hitTestSourceRequested) {
       session.requestReferenceSpace("viewer").then((refSpace) => {
-        session.requestHitTestSource({ space: refSpace }).then((source) => {
-          hitTestSource = source;
+        session.requestHitTestSource({ space: refSpace }).then((src) => {
+          hitTestSource = src;
         });
       });
       session.addEventListener("end", () => {
@@ -158,9 +170,10 @@ renderer.setAnimationLoop((timestamp, frame) => {
     if (hitTestSource) {
       const results = frame.getHitTestResults(hitTestSource);
       if (results.length > 0) {
-        const hit = results[0];
         reticle.visible = true;
-        reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
+        reticle.matrix.fromArray(
+          results[0].getPose(referenceSpace).transform.matrix,
+        );
       } else {
         reticle.visible = false;
       }
