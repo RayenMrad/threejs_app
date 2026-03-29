@@ -2,10 +2,6 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { ARButton } from "three/addons/webxr/ARButton.js";
 
-// ─────────────────────────────────────────
-// SCENE SETUP
-// ─────────────────────────────────────────
-
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
@@ -21,27 +17,16 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
 scene.add(ambientLight);
-
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(1, 2, 1);
 scene.add(directionalLight);
 
-// ─────────────────────────────────────────
-// STATUS HELPER
-// ─────────────────────────────────────────
-
 const statusEl = document.getElementById("status");
 function setStatus(msg) {
   statusEl.textContent = msg;
-  console.log(msg);
 }
-
-// ─────────────────────────────────────────
-// AR BUTTON
-// ─────────────────────────────────────────
 
 const arButton = ARButton.createButton(renderer, {
   requiredFeatures: ["hit-test"],
@@ -51,29 +36,19 @@ const arButton = ARButton.createButton(renderer, {
 document.body.appendChild(arButton);
 setStatus('Tap "Start AR" to begin');
 
-// ─────────────────────────────────────────
-// HIT TESTING
-// ─────────────────────────────────────────
-
+// Reticle
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 
-const reticleGeometry = new THREE.RingGeometry(0.08, 0.1, 32).rotateX(
-  -Math.PI / 2,
+const reticle = new THREE.Mesh(
+  new THREE.RingGeometry(0.08, 0.1, 32).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }),
 );
-const reticleMaterial = new THREE.MeshBasicMaterial({
-  color: 0xffffff,
-  side: THREE.DoubleSide,
-});
-const reticle = new THREE.Mesh(reticleGeometry, reticleMaterial);
 reticle.matrixAutoUpdate = false;
 reticle.visible = false;
 scene.add(reticle);
 
-// ─────────────────────────────────────────
-// MODEL LOADING WITH AUTO-SCALE
-// ─────────────────────────────────────────
-
+// Model
 const loader = new GLTFLoader();
 let currentModelUrl = "/models/chaise.glb";
 
@@ -81,42 +56,33 @@ const urlParams = new URLSearchParams(window.location.search);
 const modelParam = urlParams.get("model");
 if (modelParam) {
   currentModelUrl = modelParam;
-  setStatus("Model ready — tap floor to place!");
 }
 
 let placedObjects = [];
+let modelTemplate = null;
+let floorOffset = 0;
 
-// Automatically scale model to fit within a target real-world size
-function autoScale(model, targetSizeMeters = 0.6) {
-  const box = new THREE.Box3().setFromObject(model);
-  const size = new THREE.Vector3();
-  box.getSize(size);
-
-  // Find the largest dimension
-  const maxDim = Math.max(size.x, size.y, size.z);
-
-  // Scale so the largest dimension equals targetSizeMeters
-  const scale = targetSizeMeters / maxDim;
-  model.scale.set(scale, scale, scale);
-
-  // Re-calculate bounding box after scaling and center the model on the floor
-  const scaledBox = new THREE.Box3().setFromObject(model);
-  const scaledSize = new THREE.Vector3();
-  scaledBox.getSize(scaledSize);
-
-  // Shift model up so its bottom sits on the floor (y=0)
-  model.position.y -= scaledBox.min.y;
-}
-
-function loadModel(url, callback) {
+function preloadModel(url) {
   setStatus("Loading model...");
   loader.load(
     url,
     (gltf) => {
-      setStatus("Model ready — tap to place!");
       const model = gltf.scene;
-      autoScale(model, 0.6); // 0.6 meters tall — adjust this value as needed
-      callback(model);
+
+      // Scale to 0.6m real-world height
+      const box = new THREE.Box3().setFromObject(model);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const scale = 0.6 / maxDim;
+      model.scale.set(scale, scale, scale);
+
+      // Measure bottom of model after scaling so we can sit it on the floor
+      const scaledBox = new THREE.Box3().setFromObject(model);
+      floorOffset = -scaledBox.min.y;
+
+      modelTemplate = model;
+      setStatus("Model ready — point at floor and tap!");
     },
     (progress) => {
       const pct = Math.round((progress.loaded / progress.total) * 100);
@@ -129,41 +95,37 @@ function loadModel(url, callback) {
   );
 }
 
-// ─────────────────────────────────────────
-// PLACING OBJECTS ON TAP
-// ─────────────────────────────────────────
+preloadModel(currentModelUrl);
 
+// Place on tap
 renderer.domElement.addEventListener("click", () => {
-  if (reticle.visible) {
-    loadModel(currentModelUrl, (model) => {
-      // Place at reticle position (already floor-aligned by autoScale)
-      const position = new THREE.Vector3();
-      position.setFromMatrixPosition(reticle.matrix);
-      model.position.x = position.x;
-      model.position.z = position.z;
-      // model.position.y is already set by autoScale to sit on floor
+  if (reticle.visible && modelTemplate) {
+    const clone = modelTemplate.clone(true);
 
-      scene.add(model);
-      placedObjects.push(model);
-      setStatus("Placed! Tap again to add more.");
-    });
+    const position = new THREE.Vector3();
+    position.setFromMatrixPosition(reticle.matrix);
+
+    // y = reticle floor position + lift so bottom of model touches floor
+    clone.position.set(position.x, position.y + floorOffset, position.z);
+
+    scene.add(clone);
+    placedObjects.push(clone);
+    setStatus("Placed! Tap again to add more.");
   }
 });
 
-// ─────────────────────────────────────────
-// JS BRIDGE — Flutter calls these
-// ─────────────────────────────────────────
-
+// JS Bridge for Flutter
 window.setModel = function (url) {
   currentModelUrl = url;
-  setStatus("New model selected — tap floor to place!");
+  modelTemplate = null;
+  floorOffset = 0;
+  preloadModel(url);
 };
 
 window.removeLastObject = function () {
   if (placedObjects.length > 0) {
-    const obj = placedObjects.pop();
-    scene.remove(obj);
-    setStatus("Object removed");
+    scene.remove(placedObjects.pop());
+    setStatus("Removed last object");
   }
 };
 
@@ -173,10 +135,7 @@ window.clearAll = function () {
   setStatus("All cleared");
 };
 
-// ─────────────────────────────────────────
-// MAIN RENDER LOOP
-// ─────────────────────────────────────────
-
+// Render loop
 renderer.setAnimationLoop((timestamp, frame) => {
   if (frame) {
     const referenceSpace = renderer.xr.getReferenceSpace();
@@ -191,6 +150,7 @@ renderer.setAnimationLoop((timestamp, frame) => {
       session.addEventListener("end", () => {
         hitTestSourceRequested = false;
         hitTestSource = null;
+        modelTemplate = null;
       });
       hitTestSourceRequested = true;
     }
