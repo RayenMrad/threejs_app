@@ -8,7 +8,6 @@ import { ARButton } from "three/addons/webxr/ARButton.js";
 
 const scene = new THREE.Scene();
 
-// Camera — WebXR will control this automatically
 const camera = new THREE.PerspectiveCamera(
   70,
   window.innerWidth / window.innerHeight,
@@ -16,11 +15,10 @@ const camera = new THREE.PerspectiveCamera(
   20,
 );
 
-// Renderer — must have xr: true and alpha: true for AR
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.xr.enabled = true; // ← This enables WebXR
+renderer.xr.enabled = true;
 document.body.appendChild(renderer.domElement);
 
 // Lighting
@@ -42,11 +40,11 @@ function setStatus(msg) {
 }
 
 // ─────────────────────────────────────────
-// AR BUTTON — triggers camera permission + WebXR session
+// AR BUTTON
 // ─────────────────────────────────────────
 
 const arButton = ARButton.createButton(renderer, {
-  requiredFeatures: ["hit-test"], // ← needed for surface detection
+  requiredFeatures: ["hit-test"],
   optionalFeatures: ["dom-overlay"],
   domOverlay: { root: document.body },
 });
@@ -54,13 +52,12 @@ document.body.appendChild(arButton);
 setStatus('Tap "Start AR" to begin');
 
 // ─────────────────────────────────────────
-// HIT TESTING — detects real surfaces (floor, table)
+// HIT TESTING
 // ─────────────────────────────────────────
 
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 
-// Reticle = the ring that shows WHERE you'll place the object
 const reticleGeometry = new THREE.RingGeometry(0.08, 0.1, 32).rotateX(
   -Math.PI / 2,
 );
@@ -74,11 +71,11 @@ reticle.visible = false;
 scene.add(reticle);
 
 // ─────────────────────────────────────────
-// MODEL LOADING
+// MODEL LOADING WITH AUTO-SCALE
 // ─────────────────────────────────────────
 
 const loader = new GLTFLoader();
-let currentModelUrl = "/models/chaise.glb"; // default model
+let currentModelUrl = "/models/chaise.glb";
 
 const urlParams = new URLSearchParams(window.location.search);
 const modelParam = urlParams.get("model");
@@ -87,7 +84,29 @@ if (modelParam) {
   setStatus("Model ready — tap floor to place!");
 }
 
-let placedObjects = []; // keeps track of everything placed in AR
+let placedObjects = [];
+
+// Automatically scale model to fit within a target real-world size
+function autoScale(model, targetSizeMeters = 0.6) {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+
+  // Find the largest dimension
+  const maxDim = Math.max(size.x, size.y, size.z);
+
+  // Scale so the largest dimension equals targetSizeMeters
+  const scale = targetSizeMeters / maxDim;
+  model.scale.set(scale, scale, scale);
+
+  // Re-calculate bounding box after scaling and center the model on the floor
+  const scaledBox = new THREE.Box3().setFromObject(model);
+  const scaledSize = new THREE.Vector3();
+  scaledBox.getSize(scaledSize);
+
+  // Shift model up so its bottom sits on the floor (y=0)
+  model.position.y -= scaledBox.min.y;
+}
 
 function loadModel(url, callback) {
   setStatus("Loading model...");
@@ -95,7 +114,9 @@ function loadModel(url, callback) {
     url,
     (gltf) => {
       setStatus("Model ready — tap to place!");
-      callback(gltf.scene);
+      const model = gltf.scene;
+      autoScale(model, 0.6); // 0.6 meters tall — adjust this value as needed
+      callback(model);
     },
     (progress) => {
       const pct = Math.round((progress.loaded / progress.total) * 100);
@@ -114,10 +135,14 @@ function loadModel(url, callback) {
 
 renderer.domElement.addEventListener("click", () => {
   if (reticle.visible) {
-    // Clone the model at the reticle's position
     loadModel(currentModelUrl, (model) => {
-      model.position.setFromMatrixPosition(reticle.matrix);
-      model.scale.set(0.3, 0.3, 0.3); // adjust size here
+      // Place at reticle position (already floor-aligned by autoScale)
+      const position = new THREE.Vector3();
+      position.setFromMatrixPosition(reticle.matrix);
+      model.position.x = position.x;
+      model.position.z = position.z;
+      // model.position.y is already set by autoScale to sit on floor
+
       scene.add(model);
       placedObjects.push(model);
       setStatus("Placed! Tap again to add more.");
@@ -126,17 +151,14 @@ renderer.domElement.addEventListener("click", () => {
 });
 
 // ─────────────────────────────────────────
-// JS BRIDGE — Flutter will call these functions
-// This is how Flutter communicates with Three.js
+// JS BRIDGE — Flutter calls these
 // ─────────────────────────────────────────
 
-// Flutter calls this to change which model to show
 window.setModel = function (url) {
   currentModelUrl = url;
   setStatus("New model selected — tap floor to place!");
 };
 
-// Flutter calls this to remove the last placed object
 window.removeLastObject = function () {
   if (placedObjects.length > 0) {
     const obj = placedObjects.pop();
@@ -145,7 +167,6 @@ window.removeLastObject = function () {
   }
 };
 
-// Flutter calls this to clear everything
 window.clearAll = function () {
   placedObjects.forEach((obj) => scene.remove(obj));
   placedObjects = [];
@@ -158,7 +179,6 @@ window.clearAll = function () {
 
 renderer.setAnimationLoop((timestamp, frame) => {
   if (frame) {
-    // Surface detection (hit testing)
     const referenceSpace = renderer.xr.getReferenceSpace();
     const session = renderer.xr.getSession();
 
@@ -190,7 +210,6 @@ renderer.setAnimationLoop((timestamp, frame) => {
   renderer.render(scene, camera);
 });
 
-// Handle window resize
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
