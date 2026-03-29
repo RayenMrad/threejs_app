@@ -401,256 +401,419 @@ const sun = new THREE.DirectionalLight(0xffffff, 2.0);
 sun.position.set(2, 4, 2);
 scene.add(sun);
 
+// Hide default status
 const statusEl = document.getElementById("status");
-const setStatus = (msg) => {
-  statusEl.textContent = msg;
-};
+if (statusEl) statusEl.style.display = "none";
 
-document.body.appendChild(
-  ARButton.createButton(renderer, {
-    requiredFeatures: ["hit-test"],
-    optionalFeatures: ["dom-overlay"],
-    domOverlay: { root: document.body },
-  }),
-);
+// ─── AR Button ───────────────────────────────────────────────
+const arBtn = ARButton.createButton(renderer, {
+  requiredFeatures: ["hit-test"],
+  optionalFeatures: ["dom-overlay"],
+  domOverlay: { root: document.body },
+});
+document.body.appendChild(arBtn);
+
+// ─── Inject Google Font ───────────────────────────────────────
+const fontLink = document.createElement("link");
+fontLink.rel = "stylesheet";
+fontLink.href =
+  "https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500&display=swap";
+document.head.appendChild(fontLink);
 
 // ─── Styles ──────────────────────────────────────────────────
 const style = document.createElement("style");
 style.textContent = `
-  /* Override the default ARButton position */
-  .ar-button, [id*="ARButton"], button[style*="bottom"] {
-    bottom: 90px !important;
+  :root {
+    --cream: #F5F0E8;
+    --charcoal: #1C1C1E;
+    --warm-gray: #8A8680;
+    --accent: #C8A882;
+    --accent-dark: #A0845E;
+    --glass: rgba(28, 28, 30, 0.72);
+    --glass-light: rgba(255,255,255,0.10);
+    --red: #E05252;
+    --green: #4CAF7D;
+    --yellow: #E8B84B;
+    --radius: 20px;
+    --font-body: 'DM Sans', sans-serif;
+    --font-display: 'Playfair Display', serif;
   }
 
-  #hint-bar {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255,255,255,0.92);
-    font-size: 13px;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    background: rgba(0,0,0,0.5);
-    padding: 7px 18px;
-    border-radius: 20px;
-    backdrop-filter: blur(8px);
-    z-index: 200;
-    white-space: nowrap;
-    pointer-events: none;
-    display: none;
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  /* ── Hide / restyle default AR button ── */
+  #ARButton {
+    bottom: 100px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    font-family: var(--font-body) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.04em !important;
+    padding: 12px 32px !important;
+    border-radius: 50px !important;
+    background: var(--accent) !important;
+    color: var(--charcoal) !important;
+    border: none !important;
+    box-shadow: 0 8px 32px rgba(200,168,130,0.45) !important;
   }
 
-  /* ── Bottom action bar ── */
-  #action-bar {
+  /* ── Top bar ── */
+  #top-bar {
     position: fixed;
-    bottom: 32px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0; left: 0; right: 0;
+    height: 64px;
     display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 300;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  #top-bar.visible { display: flex; }
+
+  #top-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--cream);
+    letter-spacing: 0.01em;
+  }
+
+  #top-hint {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--warm-gray);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  #btn-close-ar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: var(--cream);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  #btn-close-ar:active { background: rgba(255,255,255,0.2); }
+
+  /* ── Surface scan animation ── */
+  #scan-overlay {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    flex-direction: column;
     align-items: center;
     gap: 16px;
     z-index: 200;
-    pointer-events: all;
+    pointer-events: none;
   }
-  #action-bar.visible { display: flex; }
+  #scan-overlay.visible { display: flex; }
 
-  .ab-btn {
-    width: 54px; height: 54px;
+  .scan-ring {
+    width: 160px; height: 80px;
+    border: 2px solid var(--accent);
     border-radius: 50%;
+    opacity: 0.7;
+    animation: scanPulse 2s ease-in-out infinite;
+  }
+  .scan-ring:nth-child(2) {
+    width: 200px; height: 100px;
+    opacity: 0.4;
+    animation-delay: 0.4s;
+  }
+  @keyframes scanPulse {
+    0%,100% { opacity: 0.7; transform: scaleX(1); }
+    50% { opacity: 0.3; transform: scaleX(1.05); }
+  }
+
+  #scan-label {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream);
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    padding: 8px 20px;
+    border-radius: 50px;
+    letter-spacing: 0.03em;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ── Bottom sheet ── */
+  #bottom-sheet {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 0 20px 36px;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 300;
+  }
+  #bottom-sheet.visible { display: flex; }
+
+  /* Product carousel */
+  #product-rail-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #rail-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--warm-gray);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0 4px;
+  }
+
+  #product-rail {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 4px 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+  #product-rail::-webkit-scrollbar { display: none; }
+
+  .product-chip {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px 10px 10px;
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    min-width: 120px;
+  }
+  .product-chip:active { background: rgba(255,255,255,0.12); }
+  .product-chip.active {
+    border-color: var(--accent);
+    background: rgba(200,168,130,0.15);
+  }
+
+  .chip-icon {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .chip-text { display: flex; flex-direction: column; gap: 1px; }
+  .chip-name {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream);
+  }
+  .chip-cat {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--warm-gray);
+  }
+
+  /* Action buttons row */
+  #action-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .act-btn {
     border: none;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(12px);
-    transition: transform 0.12s;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .ab-btn:active { transform: scale(0.85); }
-
-  #btn-delete {
-    background: rgba(220,53,69,0.88);
-    box-shadow: 0 4px 18px rgba(220,53,69,0.45);
-  }
-  #btn-confirm {
-    width: 68px; height: 68px;
-    background: rgba(255,255,255,0.96);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.28);
-  }
-  #btn-confirm.moving {
-    background: rgba(255, 193, 7, 0.95);
-  }
-  #btn-confirm.placed {
-    background: rgba(40, 167, 69, 0.95);
-    box-shadow: 0 4px 24px rgba(40,167,69,0.45);
-  }
-  #btn-clear {
-    background: rgba(255,255,255,0.16);
-    border: 1.5px solid rgba(255,255,255,0.35);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-  }
-
-  /* ── Right sidebar ── */
-  #sidebar {
-    position: fixed;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    display: none;
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px 10px;
-    background: rgba(0,0,0,0.45);
-    backdrop-filter: blur(12px);
-    border-radius: 18px 0 0 18px;
-    z-index: 200;
+    transition: transform 0.12s, opacity 0.12s;
     pointer-events: all;
-  }
-  #sidebar.visible { display: flex; }
-
-  .sb-item {
-    width: 56px; height: 56px;
-    border-radius: 12px;
-    border: 2px solid transparent;
-    background: rgba(255,255,255,0.12);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: border-color 0.15s, background 0.15s;
-    overflow: hidden;
     -webkit-tap-highlight-color: transparent;
   }
-  .sb-item:active { background: rgba(255,255,255,0.25); }
-  .sb-item.active {
-    border-color: rgba(255,255,255,0.9);
-    background: rgba(255,255,255,0.2);
-  }
-  .sb-item img {
-    width: 44px; height: 44px;
-    object-fit: contain;
-    border-radius: 8px;
-  }
-  .sb-item .sb-icon {
-    font-size: 26px;
-    user-select: none;
+  .act-btn:active { transform: scale(0.86); opacity: 0.75; }
+
+  #btn-undo {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.1);
   }
 
-  /* ── Selected object highlight ── */
-  #move-hint {
-    position: fixed;
-    bottom: 110px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
-    font-size: 12px;
-    font-family: -apple-system, sans-serif;
-    background: rgba(255,193,7,0.85);
-    color: #000;
-    padding: 5px 14px;
-    border-radius: 14px;
-    display: none;
-    z-index: 200;
-    pointer-events: none;
+  #btn-place {
+    width: 68px; height: 68px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 8px 28px rgba(200,168,130,0.5);
+    position: relative;
   }
+  #btn-place::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid rgba(200,168,130,0.35);
+  }
+  #btn-place.moving {
+    background: var(--yellow);
+    box-shadow: 0 8px 28px rgba(232,184,75,0.5);
+  }
+  #btn-place.moving::after { border-color: rgba(232,184,75,0.35); }
+  #btn-place.confirmed {
+    background: var(--green);
+    box-shadow: 0 8px 28px rgba(76,175,125,0.5);
+  }
+  #btn-place.confirmed::after { border-color: rgba(76,175,125,0.35); }
+
+  #btn-clear {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: rgba(224,82,82,0.18);
+    border: 1px solid rgba(224,82,82,0.3);
+    backdrop-filter: blur(16px);
+  }
+
+  /* ── Move mode pill ── */
+  #move-pill {
+    position: fixed;
+    bottom: 220px;
+    left: 50%; transform: translateX(-50%);
+    background: rgba(232,184,75,0.92);
+    color: var(--charcoal);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 7px 18px;
+    border-radius: 50px;
+    display: none;
+    z-index: 300;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  /* Entrance animations */
+  @keyframes slideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  #bottom-sheet.visible { animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+  #top-bar.visible      { animation: slideUp 0.3s ease; }
 `;
 document.head.appendChild(style);
 
-// ─── Hint bar ────────────────────────────────────────────────
-const hintBar = document.createElement("div");
-hintBar.id = "hint-bar";
-document.body.appendChild(hintBar);
-
-const moveHint = document.createElement("div");
-moveHint.id = "move-hint";
-moveHint.textContent = "Move phone to reposition • Tap ✓ to fix";
-document.body.appendChild(moveHint);
-
-// ─── Action bar ──────────────────────────────────────────────
-const actionBar = document.createElement("div");
-actionBar.id = "action-bar";
-actionBar.innerHTML = `
-  <button class="ab-btn" id="btn-delete" title="Delete selected">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="3 6 5 6 21 6"/>
-      <path d="M19 6l-1 14H6L5 6"/>
-      <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-    </svg>
-  </button>
-
-  <button class="ab-btn" id="btn-confirm" title="Place / Confirm">
-    <svg id="icon-crosshair" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.2" stroke-linecap="round">
-      <circle cx="12" cy="12" r="3"/>
-      <line x1="12" y1="2" x2="12" y2="6"/>
-      <line x1="12" y1="18" x2="12" y2="22"/>
-      <line x1="2" y1="12" x2="6" y2="12"/>
-      <line x1="18" y1="12" x2="22" y2="12"/>
-    </svg>
-    <svg id="icon-check" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
-    <svg id="icon-move" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-      <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>
-    </svg>
-  </button>
-
-  <button class="ab-btn" id="btn-clear" title="Clear all">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
-    </svg>
-  </button>
+// ─── Top Bar HTML ─────────────────────────────────────────────
+const topBar = document.createElement("div");
+topBar.id = "top-bar";
+topBar.innerHTML = `
+  <div>
+    <div id="top-title">Place Furniture</div>
+    <div id="top-hint">Move camera over floor</div>
+  </div>
+  <button id="btn-close-ar">✕</button>
 `;
-document.body.appendChild(actionBar);
+document.body.appendChild(topBar);
 
-// ─── Sidebar ─────────────────────────────────────────────────
-const sidebar = document.createElement("div");
-sidebar.id = "sidebar";
-document.body.appendChild(sidebar);
+// ─── Scan Overlay ─────────────────────────────────────────────
+const scanOverlay = document.createElement("div");
+scanOverlay.id = "scan-overlay";
+scanOverlay.innerHTML = `
+  <div class="scan-ring"></div>
+  <div class="scan-ring"></div>
+  <div id="scan-label">Scanning floor surface…</div>
+`;
+document.body.appendChild(scanOverlay);
 
-// Product list — populated from URL params or defaults
-const products = [
-  { id: "chaise", label: "Chair", url: "/models/chaise.glb", emoji: "🪑" },
-  // Add more products here
-];
+// ─── Move Pill ────────────────────────────────────────────────
+const movePill = document.createElement("div");
+movePill.id = "move-pill";
+movePill.textContent = "↕ Move phone to reposition · tap ✓ to fix";
+document.body.appendChild(movePill);
 
-// Read products from URL if passed
-const urlParams = new URLSearchParams(window.location.search);
-const modelParam = urlParams.get("model");
-// If a single model is passed, use it for the first product
-if (modelParam) products[0].url = modelParam;
+// ─── Bottom Sheet ─────────────────────────────────────────────
+const bottomSheet = document.createElement("div");
+bottomSheet.id = "bottom-sheet";
+bottomSheet.innerHTML = `
+  <div id="product-rail-wrap">
+    <div id="rail-label">Products</div>
+    <div id="product-rail"></div>
+  </div>
+  <div id="action-row">
+    <button class="act-btn" id="btn-undo" title="Remove last">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+      </svg>
+    </button>
 
-let activeProductId = products[0].id;
+    <button class="act-btn" id="btn-place" title="Place">
+      <svg id="ico-place" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="2.5"/>
+        <line x1="12" y1="3" x2="12" y2="7"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
+        <line x1="3" y1="12" x2="7" y2="12"/>
+        <line x1="17" y1="12" x2="21" y2="12"/>
+      </svg>
+      <svg id="ico-check" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <svg id="ico-move" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1C1C1E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+        <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+        <line x1="12" y1="2" x2="12" y2="22"/>
+      </svg>
+    </button>
 
-function buildSidebar() {
-  sidebar.innerHTML = "";
-  products.forEach((p) => {
-    const item = document.createElement("div");
-    item.className = "sb-item" + (p.id === activeProductId ? " active" : "");
-    item.dataset.id = p.id;
-    item.innerHTML = `<span class="sb-icon">${p.emoji}</span>`;
-    item.addEventListener("click", () => {
-      if (activeProductId === p.id && previewObject) return; // already active
-      activeProductId = p.id;
-      document
-        .querySelectorAll(".sb-item")
-        .forEach((el) => el.classList.remove("active"));
-      item.classList.add("active");
-      loadModel(p.url);
-    });
-    sidebar.appendChild(item);
-  });
-}
+    <button class="act-btn" id="btn-clear" title="Clear all">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E05252" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+      </svg>
+    </button>
+  </div>
+`;
+document.body.appendChild(bottomSheet);
 
 // ─── Reticle ─────────────────────────────────────────────────
 const reticle = new THREE.Mesh(
   new THREE.RingGeometry(0.1, 0.15, 32).rotateX(-Math.PI / 2),
   new THREE.MeshBasicMaterial({
-    color: 0xffffff,
+    color: 0xc8a882,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.9,
   }),
 );
 reticle.matrixAutoUpdate = false;
 reticle.visible = false;
 scene.add(reticle);
+
+// ─── Products ─────────────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const modelParam = urlParams.get("model") || "/models/chaise.glb";
+
+const products = [
+  {
+    id: "p1",
+    name: "Chair",
+    category: "Seating",
+    emoji: "🪑",
+    url: modelParam,
+  },
+];
 
 // ─── State ───────────────────────────────────────────────────
 let hitTestSource = null;
@@ -658,10 +821,9 @@ let hitTestSourceRequested = false;
 const floorPos = new THREE.Vector3();
 let floorFound = false;
 
-// "previewing" = following floor, "selected" = placed but can be moved, "idle" = fixed
-let appMode = "idle";
-let previewObject = null; // follows the reticle
-let selectedObject = null; // placed object being moved
+let appMode = "idle"; // "previewing" | "selected" | "idle"
+let previewObject = null;
+let selectedObject = null;
 const placedObjects = [];
 
 let gltfScene = null;
@@ -669,25 +831,71 @@ let modelScale = 1;
 let modelLift = 0;
 const TARGET_H = 0.9;
 
-// ─── Build a scaled group from gltfScene ─────────────────────
-function buildGroup() {
-  const g = new THREE.Group();
-  g.add(gltfScene.clone(true));
-  g.scale.setScalar(modelScale);
-  return g;
+// ─── DOM refs ─────────────────────────────────────────────────
+const topHint = document.getElementById("top-hint");
+const btnPlace = document.getElementById("btn-place");
+const btnUndo = document.getElementById("btn-undo");
+const btnClear = document.getElementById("btn-clear");
+const btnCloseAR = document.getElementById("btn-close-ar");
+const icoPlace = document.getElementById("ico-place");
+const icoCheck = document.getElementById("ico-check");
+const icoMove = document.getElementById("ico-move");
+const productRail = document.getElementById("product-rail");
+
+// ─── Helpers ─────────────────────────────────────────────────
+function setPlaceIcon(state) {
+  icoPlace.style.display = "none";
+  icoCheck.style.display = "none";
+  icoMove.style.display = "none";
+  btnPlace.classList.remove("moving", "confirmed");
+  if (state === "place") {
+    icoPlace.style.display = "";
+  } else if (state === "check") {
+    icoCheck.style.display = "";
+    btnPlace.classList.add("confirmed");
+  } else if (state === "move") {
+    icoMove.style.display = "";
+    btnPlace.classList.add("moving");
+  }
 }
 
-// ─── Load Model ───────────────────────────────────────────────
+function setHint(txt) {
+  topHint.textContent = txt;
+}
+
+function buildRail() {
+  productRail.innerHTML = "";
+  products.forEach((p) => {
+    const chip = document.createElement("div");
+    chip.className =
+      "product-chip" + (p.id === products[0].id ? " active" : "");
+    chip.dataset.id = p.id;
+    chip.innerHTML = `
+      <div class="chip-icon">${p.emoji}</div>
+      <div class="chip-text">
+        <div class="chip-name">${p.name}</div>
+        <div class="chip-cat">${p.category}</div>
+      </div>`;
+    chip.addEventListener("click", () => {
+      document
+        .querySelectorAll(".product-chip")
+        .forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+      loadModel(p.url);
+    });
+    productRail.appendChild(chip);
+  });
+}
+
+// ─── Load & Preview ───────────────────────────────────────────
 function loadModel(url) {
-  // Remove any existing preview
   if (previewObject) {
     scene.remove(previewObject);
     previewObject = null;
   }
   gltfScene = null;
   appMode = "idle";
-  setStatus("Loading...");
-  hintBar.textContent = "Loading model...";
+  setHint("Loading model…");
 
   new GLTFLoader().load(
     url,
@@ -697,149 +905,108 @@ function loadModel(url) {
       probe.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(probe);
       scene.remove(probe);
-
       const size = new THREE.Vector3();
       box.getSize(size);
       modelScale = TARGET_H / size.y;
       modelLift = -box.min.y * modelScale;
-
       gltfScene = gltf.scene;
       startPreview();
     },
     undefined,
-    (err) => {
-      setStatus("Error loading model");
-      console.error(err);
-    },
+    (err) => console.error(err),
   );
 }
 
 function startPreview() {
   if (previewObject) scene.remove(previewObject);
-  previewObject = buildGroup();
-  previewObject.visible = false;
-  scene.add(previewObject);
+  const g = new THREE.Group();
+  g.add(gltfScene.clone(true));
+  g.scale.setScalar(modelScale);
+  g.visible = false;
+  scene.add(g);
+  previewObject = g;
   appMode = "previewing";
-
-  setStatus("");
-  hintBar.textContent = "Point at floor to place";
-  hintBar.style.display = "block";
-  moveHint.style.display = "none";
-  setConfirmBtn("crosshair");
+  setHint("Point camera at floor");
+  setPlaceIcon("place");
+  movePill.style.display = "none";
+  scanOverlay.classList.add("visible");
 }
 
-// ─── Confirm button states ────────────────────────────────────
-function setConfirmBtn(state) {
-  const btn = document.getElementById("btn-confirm");
-  document.getElementById("icon-crosshair").style.display = "none";
-  document.getElementById("icon-check").style.display = "none";
-  document.getElementById("icon-move").style.display = "none";
-
-  btn.classList.remove("placed", "moving");
-
-  if (state === "crosshair") {
-    document.getElementById("icon-crosshair").style.display = "";
-  } else if (state === "check") {
-    document.getElementById("icon-check").style.display = "";
-    btn.classList.add("placed");
-  } else if (state === "move") {
-    document.getElementById("icon-move").style.display = "";
-    btn.classList.add("moving");
-  }
-}
-
-// ─── Place / confirm action ───────────────────────────────────
-function onConfirm() {
+function confirmPlace() {
   if (appMode === "previewing" && previewObject && floorFound) {
-    // Fix preview in place
     placedObjects.push(previewObject);
     previewObject = null;
     appMode = "idle";
-
-    hintBar.textContent = "Placed! Select from sidebar to add more";
-    moveHint.style.display = "none";
-    setConfirmBtn("check");
-
+    movePill.style.display = "none";
+    scanOverlay.classList.remove("visible");
+    setPlaceIcon("check");
+    setHint("Placed! Tap object to reposition");
     setTimeout(() => {
-      setConfirmBtn("crosshair");
-      hintBar.style.display = "none";
-    }, 1500);
+      setPlaceIcon("place");
+      setHint("Point camera at floor");
+    }, 1600);
+    setTimeout(() => startPreview(), 1700);
   } else if (appMode === "selected" && selectedObject && floorFound) {
-    // Fix the selected object where it is
     selectedObject = null;
     appMode = "idle";
-    moveHint.style.display = "none";
-    hintBar.textContent = "Fixed in place ✓";
-    setConfirmBtn("check");
+    movePill.style.display = "none";
+    setPlaceIcon("check");
+    setHint("Position fixed ✓");
     setTimeout(() => {
-      setConfirmBtn("crosshair");
-      hintBar.style.display = "none";
-    }, 1200);
+      setPlaceIcon("place");
+      setHint("Tap object to reposition");
+    }, 1400);
   }
-}
-
-// ─── Tap placed object to select & move it ───────────────────
-const raycaster = new THREE.Raycaster();
-const tapPoint = new THREE.Vector2();
-
-function onScreenTap(event) {
-  // In AR we use session select instead, but keep this for non-XR fallback
-  if (!renderer.xr.isPresenting) return;
 }
 
 // ─── XR Session ──────────────────────────────────────────────
 renderer.xr.addEventListener("sessionstart", () => {
-  actionBar.classList.add("visible");
-  sidebar.classList.add("visible");
-  buildSidebar();
+  topBar.classList.add("visible");
+  bottomSheet.classList.add("visible");
+  buildRail();
   loadModel(products[0].url);
 
   const session = renderer.xr.getSession();
-
-  // Tap = confirm placement OR select object to move
   session.addEventListener("select", () => {
     if (appMode === "previewing") {
-      onConfirm();
-    } else if (appMode === "idle") {
-      // Try to pick a placed object to move
-      if (!floorFound) return;
-      // Pick the closest placed object to where user is looking
-      if (placedObjects.length > 0) {
-        // Select the last placed (simplest UX)
-        selectedObject = placedObjects[placedObjects.length - 1];
-        appMode = "selected";
-        moveHint.style.display = "block";
-        hintBar.style.display = "block";
-        hintBar.textContent = "Move phone to reposition";
-        setConfirmBtn("move");
-      }
+      confirmPlace();
+    } else if (appMode === "idle" && placedObjects.length > 0) {
+      selectedObject = placedObjects[placedObjects.length - 1];
+      appMode = "selected";
+      movePill.style.display = "block";
+      setPlaceIcon("move");
+      setHint("Move to reposition");
     } else if (appMode === "selected") {
-      onConfirm();
+      confirmPlace();
     }
   });
 
-  document.getElementById("btn-confirm").addEventListener("click", onConfirm);
+  btnPlace.addEventListener("click", () => {
+    if (appMode === "previewing" || appMode === "selected") confirmPlace();
+    else if (appMode === "idle" && placedObjects.length > 0) {
+      selectedObject = placedObjects[placedObjects.length - 1];
+      appMode = "selected";
+      movePill.style.display = "block";
+      setPlaceIcon("move");
+      setHint("Move to reposition");
+    }
+  });
 
-  document.getElementById("btn-delete").addEventListener("click", () => {
+  btnUndo.addEventListener("click", () => {
     if (appMode === "selected" && selectedObject) {
       const idx = placedObjects.indexOf(selectedObject);
       if (idx !== -1) placedObjects.splice(idx, 1);
       scene.remove(selectedObject);
       selectedObject = null;
       appMode = "idle";
-      moveHint.style.display = "none";
-      hintBar.textContent = "Deleted";
-      setTimeout(() => {
-        hintBar.style.display = "none";
-      }, 1200);
-      setConfirmBtn("crosshair");
+      movePill.style.display = "none";
+      setPlaceIcon("place");
+      setHint("Removed");
+      setTimeout(() => setHint("Point camera at floor"), 1200);
     } else if (placedObjects.length > 0) {
       scene.remove(placedObjects.pop());
-      hintBar.style.display = "block";
-      hintBar.textContent = "Removed last item";
-      setTimeout(() => {
-        hintBar.style.display = "none";
-      }, 1200);
+      setHint("Removed last item");
+      setTimeout(() => setHint("Point camera at floor"), 1200);
     }
     if (previewObject) {
       scene.remove(previewObject);
@@ -848,7 +1015,7 @@ renderer.xr.addEventListener("sessionstart", () => {
     }
   });
 
-  document.getElementById("btn-clear").addEventListener("click", () => {
+  btnClear.addEventListener("click", () => {
     placedObjects.forEach((o) => scene.remove(o));
     placedObjects.length = 0;
     if (previewObject) {
@@ -857,15 +1024,18 @@ renderer.xr.addEventListener("sessionstart", () => {
     }
     selectedObject = null;
     appMode = "idle";
-    moveHint.style.display = "none";
-    hintBar.style.display = "block";
-    hintBar.textContent = "Cleared — select a product to place";
-    setConfirmBtn("crosshair");
+    movePill.style.display = "none";
+    setHint("Cleared");
+    setTimeout(() => startPreview(), 600);
   });
 
+  btnCloseAR.addEventListener("click", () => session.end());
+
   session.addEventListener("end", () => {
-    actionBar.classList.remove("visible");
-    sidebar.classList.remove("visible");
+    topBar.classList.remove("visible");
+    bottomSheet.classList.remove("visible");
+    scanOverlay.classList.remove("visible");
+    movePill.style.display = "none";
     hitTestSource = null;
     hitTestSourceRequested = false;
     floorFound = false;
@@ -874,11 +1044,11 @@ renderer.xr.addEventListener("sessionstart", () => {
 
 // ─── Flutter Bridge ───────────────────────────────────────────
 window.setModel = (url) => {
-  if (modelParam) products[0].url = url;
+  products[0].url = url;
   loadModel(url);
 };
-window.removeLastObject = () => document.getElementById("btn-delete").click();
-window.clearAll = () => document.getElementById("btn-clear").click();
+window.removeLastObject = () => btnUndo.click();
+window.clearAll = () => btnClear.click();
 
 // ─── Render Loop ─────────────────────────────────────────────
 renderer.setAnimationLoop((_, frame) => {
@@ -907,7 +1077,6 @@ renderer.setAnimationLoop((_, frame) => {
         const camPos = new THREE.Vector3();
         renderer.xr.getCamera().getWorldPosition(camPos);
 
-        // Move preview object
         if (appMode === "previewing" && previewObject) {
           previewObject.visible = true;
           previewObject.position.set(
@@ -916,10 +1085,9 @@ renderer.setAnimationLoop((_, frame) => {
             floorPos.z,
           );
           previewObject.lookAt(camPos.x, previewObject.position.y, camPos.z);
-          hintBar.textContent = "Tap screen or ✓ to place";
+          scanOverlay.classList.remove("visible");
+          setHint("Tap ✓ to place here");
         }
-
-        // Move selected object
         if (appMode === "selected" && selectedObject) {
           selectedObject.position.set(
             floorPos.x,
@@ -931,12 +1099,13 @@ renderer.setAnimationLoop((_, frame) => {
       } else {
         reticle.visible = false;
         floorFound = false;
-        if (appMode === "previewing")
-          hintBar.textContent = "Point at floor to detect surface";
+        if (appMode === "previewing") {
+          scanOverlay.classList.add("visible");
+          setHint("Move camera slowly over floor");
+        }
       }
     }
   }
-
   renderer.render(scene, camera);
 });
 
