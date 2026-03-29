@@ -17,16 +17,13 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 2);
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-directionalLight.position.set(1, 3, 2);
-scene.add(directionalLight);
+scene.add(new THREE.AmbientLight(0xffffff, 2));
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dirLight.position.set(3, 6, 4);
+scene.add(dirLight);
 
 const statusEl = document.getElementById("status");
-function setStatus(msg) {
-  statusEl.textContent = msg;
-}
+const setStatus = (msg) => (statusEl.textContent = msg);
 
 const arButton = ARButton.createButton(renderer, {
   requiredFeatures: ["hit-test"],
@@ -36,7 +33,7 @@ const arButton = ARButton.createButton(renderer, {
 document.body.appendChild(arButton);
 setStatus('Tap "Start AR" to begin');
 
-// ── Reticle ──────────────────────────────────────────
+// ── Reticle ──────────────────────────────────────────────────
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 
@@ -48,7 +45,7 @@ reticle.matrixAutoUpdate = false;
 reticle.visible = false;
 scene.add(reticle);
 
-// ── Model loading ────────────────────────────────────
+// ── Model ────────────────────────────────────────────────────
 const loader = new GLTFLoader();
 let currentModelUrl = "/models/chaise.glb";
 
@@ -57,40 +54,51 @@ const modelParam = urlParams.get("model");
 if (modelParam) currentModelUrl = modelParam;
 
 let placedObjects = [];
-let modelTemplate = null;
-let floorOffset = 0;
+let cachedGltf = null; // raw gltf result
+let computedScale = 1;
+let computedFloorOffset = 0;
+const TARGET_HEIGHT = 0.9; // metres
 
 function preloadModel(url) {
-  setStatus("Loading model...");
+  setStatus("Loading...");
+  cachedGltf = null;
+
   loader.load(
     url,
     (gltf) => {
-      const model = gltf.scene;
+      cachedGltf = gltf;
 
-      // Step 1: measure raw bounding box (no scale applied yet)
-      const rawBox = new THREE.Box3().setFromObject(model);
-      const rawSize = new THREE.Vector3();
-      rawBox.getSize(rawSize);
-      const maxDim = Math.max(rawSize.x, rawSize.y, rawSize.z);
+      // ── Measure raw size by wrapping in a Group at scale=1 ──
+      const probe = new THREE.Group();
+      probe.add(gltf.scene.clone(true));
+      scene.add(probe);
+      probe.updateMatrixWorld(true);
 
-      // Step 2: compute scale so the largest dimension = 0.9m (chair height)
-      // Works for any unit (cm, mm, m) the GLB was exported in
-      const TARGET = 0.9; // meters — realistic chair height
-      const scale = TARGET / maxDim;
+      const box = new THREE.Box3().setFromObject(probe);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
 
-      // Step 3: apply scale
-      model.scale.set(scale, scale, scale);
+      scene.remove(probe); // remove the probe, don't need it anymore
 
-      // Step 4: force matrix update THEN measure floor
-      model.updateMatrixWorld(true);
-      const scaledBox = new THREE.Box3().setFromObject(model);
-      floorOffset = -scaledBox.min.y; // lift so bottom = 0
+      computedScale = TARGET_HEIGHT / maxDim;
+
+      // ── Measure floor offset at the computed scale ──
+      const floorProbe = new THREE.Group();
+      floorProbe.scale.setScalar(computedScale);
+      floorProbe.add(gltf.scene.clone(true));
+      scene.add(floorProbe);
+      floorProbe.updateMatrixWorld(true);
+
+      const scaledBox = new THREE.Box3().setFromObject(floorProbe);
+      computedFloorOffset = -scaledBox.min.y;
+
+      scene.remove(floorProbe);
 
       console.log(
-        `GLB raw maxDim: ${maxDim}, scale applied: ${scale}, floorOffset: ${floorOffset}`,
+        `maxDim=${maxDim.toFixed(3)}  scale=${computedScale.toFixed(6)}  floorOffset=${computedFloorOffset.toFixed(4)}`,
       );
 
-      modelTemplate = model;
       setStatus("Point at floor → tap to place");
     },
     undefined,
@@ -103,72 +111,73 @@ function preloadModel(url) {
 
 preloadModel(currentModelUrl);
 
-// ── Place on tap ──────────────────────────────────────
+// ── Place on tap ─────────────────────────────────────────────
 renderer.domElement.addEventListener("click", () => {
-  if (!reticle.visible || !modelTemplate) return;
+  if (!reticle.visible || !cachedGltf) return;
 
-  const clone = modelTemplate.clone(true);
+  // Wrap fresh clone inside a Group — scale the GROUP, not the model
+  const pivot = new THREE.Group();
+  pivot.scale.setScalar(computedScale);
+  pivot.add(cachedGltf.scene.clone(true));
 
   const reticlePos = new THREE.Vector3();
   reticlePos.setFromMatrixPosition(reticle.matrix);
 
-  clone.position.set(reticlePos.x, reticlePos.y + floorOffset, reticlePos.z);
+  pivot.position.set(
+    reticlePos.x,
+    reticlePos.y + computedFloorOffset,
+    reticlePos.z,
+  );
 
   // Face toward camera
   const camPos = new THREE.Vector3();
   renderer.xr.getCamera().getWorldPosition(camPos);
-  clone.lookAt(camPos.x, clone.position.y, camPos.z);
+  pivot.lookAt(camPos.x, pivot.position.y, camPos.z);
 
-  scene.add(clone);
-  placedObjects.push(clone);
+  scene.add(pivot);
+  placedObjects.push(pivot);
   setStatus("Placed! Tap again to add more.");
 });
 
-// ── Flutter JS Bridge ─────────────────────────────────
-window.setModel = function (url) {
-  modelTemplate = null;
-  floorOffset = 0;
-  preloadModel(url);
-};
-window.removeLastObject = function () {
-  if (placedObjects.length > 0) {
+// ── Flutter JS Bridge ─────────────────────────────────────────
+window.setModel = (url) => preloadModel(url);
+window.removeLastObject = () => {
+  if (placedObjects.length) {
     scene.remove(placedObjects.pop());
     setStatus("Removed");
   }
 };
-window.clearAll = function () {
+window.clearAll = () => {
   placedObjects.forEach((o) => scene.remove(o));
   placedObjects = [];
   setStatus("Cleared");
 };
 
-// ── Render loop ───────────────────────────────────────
-renderer.setAnimationLoop((timestamp, frame) => {
+// ── Render loop ───────────────────────────────────────────────
+renderer.setAnimationLoop((_, frame) => {
   if (frame) {
-    const referenceSpace = renderer.xr.getReferenceSpace();
+    const refSpace = renderer.xr.getReferenceSpace();
     const session = renderer.xr.getSession();
 
     if (!hitTestSourceRequested) {
-      session.requestReferenceSpace("viewer").then((refSpace) => {
-        session.requestHitTestSource({ space: refSpace }).then((src) => {
+      session.requestReferenceSpace("viewer").then((vs) => {
+        session.requestHitTestSource({ space: vs }).then((src) => {
           hitTestSource = src;
         });
       });
       session.addEventListener("end", () => {
         hitTestSourceRequested = false;
         hitTestSource = null;
-        modelTemplate = null;
+        cachedGltf = null;
       });
       hitTestSourceRequested = true;
     }
 
     if (hitTestSource) {
-      const results = frame.getHitTestResults(hitTestSource);
-      if (results.length > 0) {
+      const hits = frame.getHitTestResults(hitTestSource);
+      if (hits.length > 0) {
         reticle.visible = true;
-        reticle.matrix.fromArray(
-          results[0].getPose(referenceSpace).transform.matrix,
-        );
+        reticle.matrix.fromArray(hits[0].getPose(refSpace).transform.matrix);
       } else {
         reticle.visible = false;
       }
