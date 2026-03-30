@@ -63,6 +63,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CasaDeco AR</title>
+
+    <!-- ✅ Tell the browser where to find "three" and its addons -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+        }
+      }
+    </script>
+
     <style>
       * {
         margin: 0;
@@ -76,16 +87,12 @@
       canvas {
         display: block;
       }
-
-      /* Hide the default status pill and AR button completely */
       #status {
         display: none !important;
       }
       #ar-button {
         display: none !important;
       }
-
-      /* Also hide the ARButton injected by Three.js */
       button[style*="position: fixed"],
       button[style*="position:fixed"] {
         display: none !important;
