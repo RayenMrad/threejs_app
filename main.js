@@ -692,17 +692,16 @@ const sun = new THREE.DirectionalLight(0xffffff, 2.0);
 sun.position.set(2, 4, 2);
 scene.add(sun);
 
-// Hide default status
 const statusEl = document.getElementById("status");
 if (statusEl) statusEl.style.display = "none";
 
-// AR Button — hidden, triggered by our own button
+// AR Button — we hide it visually and expose our own stop button
 const arBtn = ARButton.createButton(renderer, {
   requiredFeatures: ["hit-test"],
   optionalFeatures: ["dom-overlay"],
   domOverlay: { root: document.body },
 });
-arBtn.style.cssText = "display:none!important;position:fixed;bottom:-999px;";
+arBtn.style.cssText += "display:none!important;";
 document.body.appendChild(arBtn);
 
 // Font
@@ -716,9 +715,13 @@ document.head.appendChild(fontLink);
 const style = document.createElement("style");
 style.textContent = `
   :root {
-    --sand: #EDE8DF; --ink: #18181A; --muted: #9A9590;
-    --gold: #C9A96E; --gold-glow: rgba(201,169,110,0.35);
-    --red: #D95F5F; --green: #5BAD8A;
+    --sand: #EDE8DF;
+    --ink: #18181A;
+    --muted: #9A9590;
+    --gold: #C9A96E;
+    --gold-glow: rgba(201,169,110,0.35);
+    --red: #D95F5F;
+    --green: #5BAD8A;
     --glass-dark: rgba(18,18,20,0.82);
     --glass-mid: rgba(18,18,20,0.58);
     --glass-light: rgba(255,255,255,0.07);
@@ -728,65 +731,85 @@ style.textContent = `
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
-  /* Force hide any button injected by ARButton that we didn't make */
-  button[style*="bottom: 20px"], button[style*="bottom:20px"] { display: none !important; }
-
+  /* ── Start AR screen (shown before AR session) ── */
   #start-screen {
     position: fixed; inset: 0;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 16px;
-    background: #0e0e10; z-index: 1000;
+    background: #0e0e10;
+    z-index: 1000;
   }
   #start-screen h1 {
-    font-family: var(--f-display); font-size: 36px; font-weight: 600;
+    font-family: var(--f-display); font-size: 32px; font-weight: 600;
     color: var(--sand); letter-spacing: 0.02em; margin: 0;
   }
-  #start-screen p { font-family: var(--f-body); font-size: 13px; color: var(--muted); margin: 0; }
+  #start-screen p {
+    font-family: var(--f-body); font-size: 13px;
+    color: var(--muted); margin: 0;
+  }
   #btn-start-ar {
-    margin-top: 8px; padding: 14px 40px;
-    background: var(--gold); color: var(--ink);
+    margin-top: 8px;
+    padding: 14px 40px;
+    background: var(--gold);
+    color: var(--ink);
     font-family: var(--f-body); font-size: 14px; font-weight: 600;
-    letter-spacing: 0.04em; border: none; border-radius: 50px; cursor: pointer;
-    box-shadow: 0 8px 32px var(--gold-glow); transition: transform 0.15s;
+    letter-spacing: 0.04em;
+    border: none; border-radius: 50px; cursor: pointer;
+    box-shadow: 0 8px 32px var(--gold-glow);
+    transition: transform 0.15s;
   }
   #btn-start-ar:active { transform: scale(0.95); }
 
+  /* ── Top bar ── */
   #ui-top {
     position: fixed; top: 0; left: 0; right: 0; height: 66px;
     display: none; align-items: center; justify-content: space-between;
     padding: 0 20px;
     background: var(--glass-dark);
     backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-    border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 500;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    z-index: 500;
   }
   #ui-top.on { display: flex; }
   #top-left { display: flex; flex-direction: column; gap: 1px; }
-  #top-name { font-family: var(--f-display); font-size: 19px; font-weight: 600; color: var(--sand); }
-  #top-status { font-family: var(--f-body); font-size: 11px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+  #top-name {
+    font-family: var(--f-display); font-size: 19px; font-weight: 600;
+    color: var(--sand); letter-spacing: 0.01em;
+  }
+  #top-status {
+    font-family: var(--f-body); font-size: 11px; font-weight: 400;
+    color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase;
+  }
   #btn-stop {
     padding: 8px 18px;
-    background: rgba(217,95,95,0.18); border: 1px solid rgba(217,95,95,0.35);
+    background: rgba(217,95,95,0.18);
+    border: 1px solid rgba(217,95,95,0.35);
     border-radius: 50px; color: #E07070;
     font-family: var(--f-body); font-size: 12px; font-weight: 500;
     cursor: pointer; transition: background 0.15s;
+    backdrop-filter: var(--blur);
   }
   #btn-stop:active { background: rgba(217,95,95,0.32); }
 
+  /* ── Scan rings ── */
   .s-ring {
     position: fixed; top: 50%; left: 50%;
     border: 1.5px solid var(--gold); border-radius: 50%;
     pointer-events: none; z-index: 300; opacity: 0;
-    transition: opacity 0.4s; transform: translate(-50%, -56%);
+    transition: opacity 0.4s;
+    transform: translate(-50%, -56%);
   }
   .s-ring.on { animation: sPulse 2s ease-in-out infinite; }
   #sr1 { width: 160px; height: 80px; }
   #sr2 { width: 220px; height: 110px; animation-delay: 0.35s; }
-  #sr1.on { opacity: 0.65; } #sr2.on { opacity: 0.28; }
+  #sr1.on { opacity: 0.65; }
+  #sr2.on { opacity: 0.28; }
   @keyframes sPulse {
     0%,100% { transform: translate(-50%,-56%) scale(1); }
-    50% { transform: translate(-50%,-56%) scale(1.07); }
+    50%      { transform: translate(-50%,-56%) scale(1.07); }
   }
 
+  /* ── Hint pill ── */
   #hint-pill {
     position: fixed; top: 78px; left: 50%; transform: translateX(-50%);
     font-family: var(--f-body); font-size: 12px; font-weight: 500;
@@ -799,8 +822,10 @@ style.textContent = `
   }
   #hint-pill.on { opacity: 1; }
 
+  /* ── Move banner ── */
   #move-banner {
-    position: fixed; bottom: 210px;
+    position: fixed;
+    bottom: 210px;
     left: 50%; transform: translateX(-50%);
     font-family: var(--f-body); font-size: 11px; font-weight: 600;
     letter-spacing: 0.06em; text-transform: uppercase;
@@ -811,7 +836,7 @@ style.textContent = `
     box-shadow: 0 4px 20px var(--gold-glow);
   }
 
-  /* Bottom panel — fixed height, no overlap */
+  /* ── Bottom panel ── */
   #ui-bottom {
     position: fixed; bottom: 0; left: 0; right: 0;
     display: none; flex-direction: column; gap: 14px;
@@ -819,21 +844,22 @@ style.textContent = `
     backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
     border-top: 1px solid rgba(255,255,255,0.07);
     border-radius: 22px 22px 0 0;
-    padding: 12px 22px 48px;
+    padding: 12px 22px 44px;
     z-index: 500;
   }
-  #ui-bottom.on { display: flex; animation: slideUp 0.38s cubic-bezier(0.16,1,0.3,1); }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  #ui-bottom.on { display: flex; }
 
   #drag-handle {
     width: 34px; height: 3px; background: rgba(255,255,255,0.15);
     border-radius: 2px; margin: 0 auto 2px;
   }
+
   .sec-label {
     font-family: var(--f-body); font-size: 10px; font-weight: 600;
     letter-spacing: 0.14em; text-transform: uppercase;
     color: var(--muted); margin-bottom: 8px;
   }
+
   #chip-rail {
     display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none;
     -webkit-overflow-scrolling: touch; padding: 2px 0;
@@ -858,8 +884,9 @@ style.textContent = `
   }
   .p-info { display: flex; flex-direction: column; gap: 1px; }
   .p-name { font-family: var(--f-body); font-size: 13px; font-weight: 500; color: var(--sand); }
-  .p-cat { font-family: var(--f-body); font-size: 11px; color: var(--muted); }
+  .p-cat  { font-family: var(--f-body); font-size: 11px; color: var(--muted); }
 
+  /* ── Action row ── */
   #act-row {
     display: flex; align-items: center; justify-content: center; gap: 20px;
   }
@@ -872,7 +899,8 @@ style.textContent = `
 
   #a-undo {
     width: 52px; height: 52px; border-radius: 50%;
-    background: var(--glass-light); border: 1px solid rgba(255,255,255,0.1);
+    background: var(--glass-light);
+    border: 1px solid rgba(255,255,255,0.1);
   }
   #a-place {
     width: 70px; height: 70px; border-radius: 50%;
@@ -892,8 +920,14 @@ style.textContent = `
 
   #a-del {
     width: 52px; height: 52px; border-radius: 50%;
-    background: rgba(217,95,95,0.13); border: 1px solid rgba(217,95,95,0.25);
+    background: rgba(217,95,95,0.13);
+    border: 1px solid rgba(217,95,95,0.25);
   }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); } to { transform: translateY(0); }
+  }
+  #ui-bottom.on { animation: slideUp 0.38s cubic-bezier(0.16,1,0.3,1); }
 `;
 document.head.appendChild(style);
 
@@ -997,30 +1031,12 @@ reticle.visible = false;
 scene.add(reticle);
 
 // ─── Products ─────────────────────────────────────────────────
-// Support multiple products via URL:
-// ?model=url1&name=Chair&cat=Seating&model=url2&name=Sofa&cat=Living
-// Or single: ?model=url
 const urlParams = new URLSearchParams(window.location.search);
 const modelParam = urlParams.get("model") || "/models/chaise.glb";
-
-// Build product list from URL params
-// Flutter can pass: ?products=[{"url":"...","name":"...","cat":"...","emoji":"..."}]
-let products = [];
-const productsParam = urlParams.get("products");
-if (productsParam) {
-  try {
-    products = JSON.parse(decodeURIComponent(productsParam));
-  } catch (_) {}
-}
-if (products.length === 0) {
-  products = [
-    { id: "p1", name: "Chair", cat: "Seating", emoji: "🪑", url: modelParam },
-  ];
-}
-// Ensure each product has an id
-products = products.map((p, i) => ({ id: p.id || `p${i}`, emoji: "🛋️", ...p }));
-
-let activeProductId = products[0].id;
+const products = [
+  { id: "p1", name: "Chair", cat: "Seating", emoji: "🪑", url: modelParam },
+];
+let activeProductId = "p1";
 
 // ─── State ───────────────────────────────────────────────────
 let hitTestSource = null,
@@ -1034,7 +1050,6 @@ const placedList = [];
 let gltfScene = null,
   modelScale = 1,
   modelLift = 0;
-const gltfCache = {}; // cache loaded GLTFs by URL
 
 // ─── Helpers ─────────────────────────────────────────────────
 function setPlaceIcon(s) {
@@ -1073,7 +1088,7 @@ function buildRail() {
   });
 }
 
-// ─── Load model (with cache) ──────────────────────────────────
+// ─── Load model ───────────────────────────────────────────────
 function loadModel(url) {
   if (previewObj) {
     scene.remove(previewObj);
@@ -1084,16 +1099,20 @@ function loadModel(url) {
   topStatus.textContent = "Loading…";
   setHint(null);
 
-  if (gltfCache[url]) {
-    _onModelLoaded(gltfCache[url]);
-    return;
-  }
-
   new GLTFLoader().load(
     url,
     (gltf) => {
-      gltfCache[url] = gltf;
-      _onModelLoaded(gltf);
+      const probe = gltf.scene.clone(true);
+      scene.add(probe);
+      probe.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(probe);
+      scene.remove(probe);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      modelScale = 0.9 / size.y;
+      modelLift = -box.min.y * modelScale;
+      gltfScene = gltf.scene;
+      startPreview();
     },
     undefined,
     (err) => {
@@ -1101,20 +1120,6 @@ function loadModel(url) {
       console.error(err);
     },
   );
-}
-
-function _onModelLoaded(gltf) {
-  const probe = gltf.scene.clone(true);
-  scene.add(probe);
-  probe.updateMatrixWorld(true);
-  const box = new THREE.Box3().setFromObject(probe);
-  scene.remove(probe);
-  const size = new THREE.Vector3();
-  box.getSize(size);
-  modelScale = 0.9 / size.y;
-  modelLift = -box.min.y * modelScale;
-  gltfScene = gltf.scene;
-  startPreview();
 }
 
 function startPreview() {
@@ -1141,7 +1146,7 @@ function doConfirm() {
     moveBanner.style.display = "none";
     setPlaceIcon("check");
     topStatus.textContent = "Placed!";
-    setHint("Select a product to place another");
+    setHint("Tap ↺ to undo · tap ✦ to move");
     setTimeout(() => {
       setPlaceIcon("aim");
       setHint(null);
@@ -1162,11 +1167,22 @@ function doConfirm() {
 }
 
 // ─── Start button ─────────────────────────────────────────────
-document
-  .getElementById("btn-start-ar")
-  .addEventListener("click", () => arBtn.click());
+document.getElementById("btn-start-ar").addEventListener("click", async () => {
+  if (!navigator.xr) {
+    alert("WebXR not supported. Please use Chrome on Android.");
+    return;
+  }
+  const supported = await navigator.xr.isSessionSupported("immersive-ar");
+  if (!supported) {
+    alert(
+      "AR not supported on this device. Please use Android Chrome with ARCore.",
+    );
+    return;
+  }
+  arBtn.click();
+});
 
-// ─── XR Session ──────────────────────────────────────────────
+// ─── XR session events ────────────────────────────────────────
 renderer.xr.addEventListener("sessionstart", () => {
   startScreen.style.display = "none";
   uiTop.classList.add("on");
