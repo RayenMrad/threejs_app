@@ -776,7 +776,7 @@ const arBtn = ARButton.createButton(renderer, {
 });
 arBtn.id = "ARButton";
 arBtn.style.cssText =
-  "display:none!important;visibility:hidden!important;pointer-events:none!important;";
+  "position:fixed;bottom:-9999px;left:-9999px;opacity:0;pointer-events:none;width:1px;height:1px;";
 document.body.appendChild(arBtn);
 
 document.getElementById("btn-start-ar").addEventListener("click", () => {
