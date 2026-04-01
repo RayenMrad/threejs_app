@@ -909,9 +909,10 @@ style.textContent = `
   }
   .p-thumb img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; display: block; }
 
-  .p-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .p-info { display: flex; align-items: center; min-width: 0; }
   .p-name {
-    font-family: var(--f-body); font-size: 13px; font-weight: 500; color: var(--sand);
+    font-family: var(--f-body); font-size: 13px; font-weight: 500;
+    color: var(--sand);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     max-width: 140px;
   }
@@ -1153,11 +1154,11 @@ function buildRail() {
     const c = document.createElement("div");
     c.className = "p-chip" + (p.id === activeProductId ? " active" : "");
 
-    // Build thumb safely — no inline onerror with emoji string
     const thumb = document.createElement("div");
     thumb.className = "p-thumb";
     if (p.imageUrl) {
       const img = document.createElement("img");
+      img.crossOrigin = "anonymous";
       img.src = p.imageUrl;
       img.alt = p.name;
       img.onerror = () => {
@@ -1169,17 +1170,13 @@ function buildRail() {
       thumb.textContent = p.emoji;
     }
 
-    const info = document.createElement("div");
-    info.className = "p-info";
-    // Only name + category — never the id
     const nameEl = document.createElement("div");
     nameEl.className = "p-name";
     nameEl.textContent = p.name;
-    const catEl = document.createElement("div");
-    catEl.className = "p-cat";
-    catEl.textContent = p.cat;
-    info.appendChild(nameEl);
-    info.appendChild(catEl);
+
+    const info = document.createElement("div");
+    info.className = "p-info";
+    info.appendChild(nameEl); // name only, no category
 
     c.appendChild(thumb);
     c.appendChild(info);
@@ -1192,6 +1189,7 @@ function buildRail() {
       c.classList.add("active");
       loadModel(p.url);
     });
+
     chipRail.appendChild(c);
   });
 }
