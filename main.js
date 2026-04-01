@@ -779,6 +779,15 @@ arBtn.style.cssText =
   "display:none!important;visibility:hidden!important;pointer-events:none!important;";
 document.body.appendChild(arBtn);
 
+document.getElementById("btn-start-ar").addEventListener("click", () => {
+  arBtn.click();
+  // After the session starts, ARButton re-shows itself — remove it
+  setTimeout(() => {
+    const btn = document.getElementById("ARButton");
+    if (btn) btn.remove();
+  }, 500);
+});
+
 const fontLink = document.createElement("link");
 fontLink.rel = "stylesheet";
 fontLink.href =
@@ -1299,6 +1308,9 @@ document.getElementById("btn-start-ar").addEventListener("click", () => {
 
 // ─── XR session events ────────────────────────────────────────
 renderer.xr.addEventListener("sessionstart", () => {
+  const arBtnEl = document.getElementById("ARButton");
+  if (arBtnEl) arBtnEl.remove();
+
   startScreen.style.display = "none";
   uiTop.classList.add("on");
   uiBottom.classList.add("on");
