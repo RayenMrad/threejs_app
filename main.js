@@ -1314,20 +1314,64 @@ renderer.xr.addEventListener("sessionstart", () => {
 
   const session = renderer.xr.getSession();
 
-  session.addEventListener("select", () => {
-    if (appMode === "previewing") doConfirm();
-    else if (appMode === "idle" && placedList.length > 0) {
-      selectedObj = placedList[placedList.length - 1];
-      appMode = "selected";
-      moveBanner.style.display = "block";
-      setPlaceIcon("move");
-      topStatus.textContent = "Moving item";
-    } else if (appMode === "selected") doConfirm();
+  const raycaster = new THREE.Raycaster();
+
+  session.addEventListener("select", (event) => {
+    if (appMode === "previewing") {
+      doConfirm();
+      return;
+    }
+
+    if (appMode === "selected") {
+      doConfirm();
+      return;
+    }
+
+    if (appMode === "idle" && placedList.length > 0) {
+      // ── Only select if the user tapped ON a placed object ──
+      const xrCamera = renderer.xr.getCamera();
+
+      // Cast ray from center of screen (where the reticle is)
+      raycaster.setFromCamera({ x: 0, y: 0 }, xrCamera);
+
+      // Collect all meshes from all placed objects
+      const targets = [];
+      placedList.forEach((obj) => {
+        obj.traverse((child) => {
+          if (child.isMesh) targets.push(child);
+        });
+      });
+
+      const hits = raycaster.intersectObjects(targets, false);
+
+      if (hits.length > 0) {
+        // Find which placed object was hit
+        const hitMesh = hits[0].object;
+        const hitObj = placedList.find((obj) => {
+          let found = false;
+          obj.traverse((child) => {
+            if (child === hitMesh) found = true;
+          });
+          return found;
+        });
+
+        if (hitObj) {
+          selectedObj = hitObj;
+          appMode = "selected";
+          moveBanner.style.display = "block";
+          setPlaceIcon("move");
+          topStatus.textContent = "Moving item";
+        }
+      }
+      // If tapped empty floor → do nothing, object stays placed
+    }
   });
 
   aPlace.addEventListener("click", () => {
-    if (appMode === "previewing" || appMode === "selected") doConfirm();
-    else if (appMode === "idle" && placedList.length > 0) {
+    if (appMode === "previewing" || appMode === "selected") {
+      doConfirm();
+    } else if (appMode === "idle" && placedList.length > 0) {
+      // Place button always selects the last placed object for moving
       selectedObj = placedList[placedList.length - 1];
       appMode = "selected";
       moveBanner.style.display = "block";
