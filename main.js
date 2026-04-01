@@ -779,13 +779,17 @@ arBtn.style.cssText =
   "position:fixed;bottom:-9999px;left:-9999px;opacity:0;pointer-events:none;width:1px;height:1px;";
 document.body.appendChild(arBtn);
 
+// ─── DOM ─────────────────────────────────────────────────────
+const startScreen = document.createElement("div");
+startScreen.id = "start-screen";
+startScreen.innerHTML = `
+  <h1>CasaDeco AR</h1>
+  <p>Visualise furniture in your space</p>
+  <button id="btn-start-ar">Start AR Experience</button>`;
+document.body.appendChild(startScreen);
+
 document.getElementById("btn-start-ar").addEventListener("click", () => {
   arBtn.click();
-  // After the session starts, ARButton re-shows itself — remove it
-  setTimeout(() => {
-    const btn = document.getElementById("ARButton");
-    if (btn) btn.remove();
-  }, 500);
 });
 
 const fontLink = document.createElement("link");
@@ -965,15 +969,6 @@ style.textContent = `
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 `;
 document.head.appendChild(style);
-
-// ─── DOM ─────────────────────────────────────────────────────
-const startScreen = document.createElement("div");
-startScreen.id = "start-screen";
-startScreen.innerHTML = `
-  <h1>CasaDeco AR</h1>
-  <p>Visualise furniture in your space</p>
-  <button id="btn-start-ar">Start AR Experience</button>`;
-document.body.appendChild(startScreen);
 
 const uiTop = document.createElement("div");
 uiTop.id = "ui-top";
