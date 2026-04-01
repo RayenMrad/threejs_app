@@ -774,7 +774,9 @@ const arBtn = ARButton.createButton(renderer, {
   optionalFeatures: ["dom-overlay"],
   domOverlay: { root: document.body },
 });
-arBtn.style.cssText += "display:none!important;";
+arBtn.id = "ARButton";
+arBtn.style.cssText =
+  "display:none!important;visibility:hidden!important;pointer-events:none!important;";
 document.body.appendChild(arBtn);
 
 const fontLink = document.createElement("link");
@@ -940,6 +942,11 @@ style.textContent = `
     background: var(--green);
     box-shadow: 0 0 0 8px rgba(91,173,138,0.18), 0 8px 28px rgba(91,173,138,0.38);
     animation: pop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #ARButton {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
   @keyframes pop { from { transform: scale(0.82); } to { transform: scale(1); } }
   #a-del {
