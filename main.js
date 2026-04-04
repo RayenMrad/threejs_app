@@ -813,9 +813,9 @@ startScreen.innerHTML = `
   <button id="btn-start-ar">Start AR Experience</button>`;
 document.body.appendChild(startScreen);
 
-document.getElementById("btn-start-ar").addEventListener("click", () => {
-  arBtn.click();
-});
+document
+  .getElementById("btn-start-ar")
+  .addEventListener("click", () => arBtn.click());
 
 const fontLink = document.createElement("link");
 fontLink.rel = "stylesheet";
@@ -827,201 +827,79 @@ document.head.appendChild(fontLink);
 const style = document.createElement("style");
 style.textContent = `
   :root {
-    --sand: #EDE8DF; --ink: #18181A; --muted: #9A9590;
-    --gold: #C9A96E; --gold-glow: rgba(201,169,110,0.35);
-    --red: #D95F5F; --green: #5BAD8A;
-    --glass-dark: rgba(18,18,20,0.82); --glass-mid: rgba(18,18,20,0.58);
-    --glass-light: rgba(255,255,255,0.07);
-    --blur: blur(24px);
-    --f-body: 'DM Sans', sans-serif; --f-display: 'Cormorant Garamond', serif;
+    --sand:#EDE8DF;--ink:#18181A;--muted:#9A9590;
+    --gold:#C9A96E;--gold-glow:rgba(201,169,110,0.35);
+    --red:#D95F5F;--green:#5BAD8A;
+    --glass-dark:rgba(18,18,20,0.82);--glass-mid:rgba(18,18,20,0.58);
+    --glass-light:rgba(255,255,255,0.07);
+    --blur:blur(24px);
+    --f-body:'DM Sans',sans-serif;--f-display:'Cormorant Garamond',serif;
   }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 
-  #start-screen {
-    position: fixed; inset: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px;
-    background: #0e0e10; z-index: 1000;
-  }
-  #start-screen h1 {
-    font-family: var(--f-display); font-size: 32px; font-weight: 600;
-    color: var(--sand); letter-spacing: 0.02em; margin: 0;
-  }
-  #start-screen p { font-family: var(--f-body); font-size: 13px; color: var(--muted); margin: 0; }
-  #btn-start-ar {
-    margin-top: 8px; padding: 14px 40px; background: var(--gold); color: var(--ink);
-    font-family: var(--f-body); font-size: 14px; font-weight: 600; letter-spacing: 0.04em;
-    border: none; border-radius: 50px; cursor: pointer;
-    box-shadow: 0 8px 32px var(--gold-glow); transition: transform 0.15s;
-  }
-  #btn-start-ar:active { transform: scale(0.95); }
+  #start-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0e0e10;z-index:1000;}
+  #start-screen h1{font-family:var(--f-display);font-size:32px;font-weight:600;color:var(--sand);letter-spacing:0.02em;margin:0;}
+  #start-screen p{font-family:var(--f-body);font-size:13px;color:var(--muted);margin:0;}
+  #btn-start-ar{margin-top:8px;padding:14px 40px;background:var(--gold);color:var(--ink);font-family:var(--f-body);font-size:14px;font-weight:600;letter-spacing:0.04em;border:none;border-radius:50px;cursor:pointer;box-shadow:0 8px 32px var(--gold-glow);transition:transform 0.15s;}
+  #btn-start-ar:active{transform:scale(0.95);}
 
-  #ui-top {
-    position: fixed; top: 0; left: 0; right: 0; height: 66px;
-    display: none; align-items: center; justify-content: space-between;
-    padding: 0 20px; background: var(--glass-dark);
-    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-    border-bottom: 1px solid rgba(255,255,255,0.06); z-index: 500;
-  }
-  #ui-top.on { display: flex; }
-  #top-left { display: flex; flex-direction: column; gap: 1px; }
-  #top-name { font-family: var(--f-display); font-size: 19px; font-weight: 600; color: var(--sand); letter-spacing: 0.01em; }
-  #top-status { font-family: var(--f-body); font-size: 11px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
-  #btn-stop {
-    padding: 8px 18px; background: rgba(217,95,95,0.18);
-    border: 1px solid rgba(217,95,95,0.35); border-radius: 50px; color: #E07070;
-    font-family: var(--f-body); font-size: 12px; font-weight: 500;
-    cursor: pointer; transition: background 0.15s; backdrop-filter: var(--blur);
-  }
-  #btn-stop:active { background: rgba(217,95,95,0.32); }
+  #ui-top{position:fixed;top:0;left:0;right:0;height:66px;display:none;align-items:center;justify-content:space-between;padding:0 20px;background:var(--glass-dark);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid rgba(255,255,255,0.06);z-index:500;}
+  #ui-top.on{display:flex;}
+  #top-left{display:flex;flex-direction:column;gap:1px;}
+  #top-name{font-family:var(--f-display);font-size:19px;font-weight:600;color:var(--sand);letter-spacing:0.01em;}
+  #top-status{font-family:var(--f-body);font-size:11px;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;}
+  #btn-stop{padding:8px 18px;background:rgba(217,95,95,0.18);border:1px solid rgba(217,95,95,0.35);border-radius:50px;color:#E07070;font-family:var(--f-body);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.15s;backdrop-filter:var(--blur);}
+  #btn-stop:active{background:rgba(217,95,95,0.32);}
 
-  .s-ring {
-    position: fixed; top: 50%; left: 50%;
-    border: 1.5px solid var(--gold); border-radius: 50%;
-    pointer-events: none; z-index: 300; opacity: 0; transition: opacity 0.4s;
-    transform: translate(-50%, -56%);
-  }
-  .s-ring.on { animation: sPulse 2s ease-in-out infinite; }
-  #sr1 { width: 160px; height: 80px; }
-  #sr2 { width: 220px; height: 110px; animation-delay: 0.35s; }
-  #sr1.on { opacity: 0.65; } #sr2.on { opacity: 0.28; }
-  @keyframes sPulse {
-    0%,100% { transform: translate(-50%,-56%) scale(1); }
-    50% { transform: translate(-50%,-56%) scale(1.07); }
-  }
+  .s-ring{position:fixed;top:50%;left:50%;border:1.5px solid var(--gold);border-radius:50%;pointer-events:none;z-index:300;opacity:0;transition:opacity 0.4s;transform:translate(-50%,-56%);}
+  .s-ring.on{animation:sPulse 2s ease-in-out infinite;}
+  #sr1{width:160px;height:80px;}
+  #sr2{width:220px;height:110px;animation-delay:0.35s;}
+  #sr1.on{opacity:0.65;}#sr2.on{opacity:0.28;}
+  @keyframes sPulse{0%,100%{transform:translate(-50%,-56%) scale(1);}50%{transform:translate(-50%,-56%) scale(1.07);}}
 
-  #hint-pill {
-    position: fixed; top: 78px; left: 50%; transform: translateX(-50%);
-    font-family: var(--f-body); font-size: 12px; font-weight: 500;
-    color: rgba(255,255,255,0.9); background: var(--glass-mid); backdrop-filter: var(--blur);
-    padding: 6px 16px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.08);
-    z-index: 500; pointer-events: none; white-space: nowrap; opacity: 0; transition: opacity 0.25s;
-  }
-  #hint-pill.on { opacity: 1; }
+  #hint-pill{position:fixed;top:78px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:12px;font-weight:500;color:rgba(255,255,255,0.9);background:var(--glass-mid);backdrop-filter:var(--blur);padding:6px 16px;border-radius:50px;border:1px solid rgba(255,255,255,0.08);z-index:500;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity 0.25s;}
+  #hint-pill.on{opacity:1;}
 
-  #move-banner {
-    position: fixed; bottom: 230px; left: 50%; transform: translateX(-50%);
-    font-family: var(--f-body); font-size: 11px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--ink); background: var(--gold); padding: 6px 20px; border-radius: 50px;
-    z-index: 500; pointer-events: none; display: none; white-space: nowrap;
-    box-shadow: 0 4px 20px var(--gold-glow);
-  }
+  #move-banner{position:fixed;bottom:230px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink);background:var(--gold);padding:6px 20px;border-radius:50px;z-index:500;pointer-events:none;display:none;white-space:nowrap;box-shadow:0 4px 20px var(--gold-glow);}
 
-  #ui-bottom {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    display: none; flex-direction: column; gap: 12px;
-    background: var(--glass-dark); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-    border-top: 1px solid rgba(255,255,255,0.07); border-radius: 22px 22px 0 0;
-    padding: 12px 22px 44px; z-index: 500;
-  }
-  #ui-bottom.on { display: flex; animation: slideUp 0.38s cubic-bezier(0.16,1,0.3,1); }
-  #drag-handle { width: 34px; height: 3px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0 auto 2px; }
+  #ui-bottom{position:fixed;bottom:0;left:0;right:0;display:none;flex-direction:column;gap:12px;background:var(--glass-dark);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-top:1px solid rgba(255,255,255,0.07);border-radius:22px 22px 0 0;padding:12px 22px 44px;z-index:500;}
+  #ui-bottom.on{display:flex;animation:slideUp 0.38s cubic-bezier(0.16,1,0.3,1);}
+  #drag-handle{width:34px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 2px;}
 
-  .sec-label {
-    font-family: var(--f-body); font-size: 10px; font-weight: 600;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
-  }
+  .sec-label{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
 
-  #chip-rail {
-    display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none;
-    -webkit-overflow-scrolling: touch; padding: 2px 0;
-  }
-  #chip-rail::-webkit-scrollbar { display: none; }
+  #chip-rail{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 0;}
+  #chip-rail::-webkit-scrollbar{display:none;}
 
-  .p-chip {
-    flex-shrink: 0; display: flex; align-items: center; gap: 10px;
-    padding: 9px 16px 9px 9px;
-    background: var(--glass-light); border: 1.5px solid rgba(255,255,255,0.08);
-    border-radius: 14px; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    min-width: 160px; max-width: 220px;
-  }
-  .p-chip.active { border-color: var(--gold); background: rgba(201,169,110,0.12); }
-  .p-chip:active { opacity: 0.6; }
+  .p-chip{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:9px 16px 9px 9px;background:var(--glass-light);border:1.5px solid rgba(255,255,255,0.08);border-radius:14px;cursor:pointer;transition:border-color 0.2s,background 0.2s;min-width:160px;max-width:220px;}
+  .p-chip.active{border-color:var(--gold);background:rgba(201,169,110,0.12);}
+  .p-chip:active{opacity:0.6;}
+  .p-thumb{width:44px;height:44px;flex-shrink:0;background:rgba(255,255,255,0.06);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;}
+  .p-thumb img{width:44px;height:44px;object-fit:cover;border-radius:10px;display:block;}
+  .p-info{display:flex;align-items:center;min-width:0;}
+  .p-name{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
 
-  .p-thumb {
-    width: 44px; height: 44px; flex-shrink: 0;
-    background: rgba(255,255,255,0.06); border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; overflow: hidden;
-  }
-  .p-thumb img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; display: block; }
+  #act-row{display:flex;align-items:center;justify-content:center;gap:14px;}
+  .a-btn{border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.12s,opacity 0.12s;}
+  .a-btn:active{transform:scale(0.82);opacity:0.7;}
 
-  .p-info { display: flex; align-items: center; min-width: 0; }
-  .p-name {
-    font-family: var(--f-body); font-size: 13px; font-weight: 500;
-    color: var(--sand);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 140px;
-  }
+  #a-rot-l,#a-rot-r{width:48px;height:48px;border-radius:50%;background:var(--glass-light);border:1.5px solid rgba(201,169,110,0.35);transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;}
+  #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(201,169,110,0.18);border-color:rgba(201,169,110,0.7);}
+  #a-rot-l.dim,#a-rot-r.dim{opacity:0.25;pointer-events:none;}
 
-  /* ── Action row ── */
-  #act-row {
-    display: flex; align-items: center; justify-content: center; gap: 14px;
-  }
+  #a-undo{width:52px;height:52px;border-radius:50%;background:var(--glass-light);border:1px solid rgba(255,255,255,0.1);}
+  #a-place{width:70px;height:70px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 8px rgba(201,169,110,0.15),0 8px 28px var(--gold-glow);}
+  #a-place.s-move{background:#E8B84B;box-shadow:0 0 0 8px rgba(232,184,75,0.15),0 8px 28px rgba(232,184,75,0.4);}
+  #a-place.s-ok{background:var(--green);box-shadow:0 0 0 8px rgba(91,173,138,0.18),0 8px 28px rgba(91,173,138,0.38);animation:pop 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  #ARButton{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+  @keyframes pop{from{transform:scale(0.82);}to{transform:scale(1);}}
+  #a-del{width:52px;height:52px;border-radius:50%;background:rgba(217,95,95,0.13);border:1px solid rgba(217,95,95,0.25);}
 
-  .a-btn {
-    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: transform 0.12s, opacity 0.12s;
-  }
-  .a-btn:active { transform: scale(0.82); opacity: 0.7; }
+  #rot-label{position:fixed;bottom:200px;right:20px;font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--sand);background:var(--glass-mid);backdrop-filter:var(--blur);padding:5px 14px;border-radius:50px;border:1px solid rgba(201,169,110,0.25);z-index:500;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
+  #rot-label.on{opacity:1;}
 
-  /* ── Rotate buttons ── */
-  #a-rot-l, #a-rot-r {
-    width: 48px; height: 48px; border-radius: 50%;
-    background: var(--glass-light); border: 1.5px solid rgba(201,169,110,0.35);
-    transition: background 0.15s, border-color 0.15s, transform 0.12s, opacity 0.12s;
-  }
-  #a-rot-l.spinning, #a-rot-r.spinning {
-    background: rgba(201,169,110,0.18);
-    border-color: rgba(201,169,110,0.7);
-  }
-  #a-rot-l:active, #a-rot-r:active { transform: scale(0.82); opacity: 0.7; }
-
-  /* disabled state when nothing is active */
-  #a-rot-l.dim, #a-rot-r.dim { opacity: 0.25; pointer-events: none; }
-
-  #a-undo {
-    width: 52px; height: 52px; border-radius: 50%;
-    background: var(--glass-light); border: 1px solid rgba(255,255,255,0.1);
-  }
-  #a-place {
-    width: 70px; height: 70px; border-radius: 50%; background: var(--gold);
-    box-shadow: 0 0 0 8px rgba(201,169,110,0.15), 0 8px 28px var(--gold-glow);
-  }
-  #a-place.s-move {
-    background: #E8B84B;
-    box-shadow: 0 0 0 8px rgba(232,184,75,0.15), 0 8px 28px rgba(232,184,75,0.4);
-  }
-  #a-place.s-ok {
-    background: var(--green);
-    box-shadow: 0 0 0 8px rgba(91,173,138,0.18), 0 8px 28px rgba(91,173,138,0.38);
-    animation: pop 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  #ARButton {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-  @keyframes pop { from { transform: scale(0.82); } to { transform: scale(1); } }
-  #a-del {
-    width: 52px; height: 52px; border-radius: 50%;
-    background: rgba(217,95,95,0.13); border: 1px solid rgba(217,95,95,0.25);
-  }
-
-  /* ── Rotation label pill that floats above bottom panel ── */
-  #rot-label {
-    position: fixed; bottom: 200px; right: 20px;
-    font-family: var(--f-body); font-size: 11px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--sand); background: var(--glass-mid); backdrop-filter: var(--blur);
-    padding: 5px 14px; border-radius: 50px; border: 1px solid rgba(201,169,110,0.25);
-    z-index: 500; pointer-events: none; opacity: 0; transition: opacity 0.2s;
-    white-space: nowrap;
-  }
-  #rot-label.on { opacity: 1; }
-
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 `;
 document.head.appendChild(style);
 
@@ -1052,7 +930,6 @@ moveBanner.id = "move-banner";
 moveBanner.textContent = "Move phone · tap ✓ to lock position";
 document.body.appendChild(moveBanner);
 
-// ── Rotation angle label ──────────────────────────────────────
 const rotLabel = document.createElement("div");
 rotLabel.id = "rot-label";
 document.body.appendChild(rotLabel);
@@ -1067,24 +944,16 @@ uiBottom.innerHTML = `
     <div id="chip-rail"></div>
   </div>
   <div id="act-row">
-
-    <!-- Rotate Left -->
     <button class="a-btn dim" id="a-rot-l" title="Rotate left">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-           stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/>
-        <polyline points="2 17 2.5 12 7.5 13.5"/>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/><polyline points="2 17 2.5 12 7.5 13.5"/>
       </svg>
     </button>
-
-    <!-- Undo -->
     <button class="a-btn" id="a-undo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
       </svg>
     </button>
-
-    <!-- Place / Confirm / Move -->
     <button class="a-btn" id="a-place">
       <svg id="ico-aim" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
         <circle cx="12" cy="12" r="2.2"/>
@@ -1099,24 +968,17 @@ uiBottom.innerHTML = `
         <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
       </svg>
     </button>
-
-    <!-- Delete all -->
     <button class="a-btn" id="a-del">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D95F5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="3 6 5 6 21 6"/>
         <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
       </svg>
     </button>
-
-    <!-- Rotate Right -->
     <button class="a-btn dim" id="a-rot-r" title="Rotate right">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-           stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/>
-        <polyline points="22 17 21.5 12 16.5 13.5"/>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/><polyline points="22 17 21.5 12 16.5 13.5"/>
       </svg>
     </button>
-
   </div>`;
 document.body.appendChild(uiBottom);
 
@@ -1149,7 +1011,7 @@ reticle.matrixAutoUpdate = false;
 reticle.visible = false;
 scene.add(reticle);
 
-// ─── Products — parsed from URL ───────────────────────────────
+// ─── Products ────────────────────────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
 
 function getCategoryEmoji(category) {
@@ -1229,17 +1091,104 @@ let gltfScene = null,
   modelScale = 1,
   modelLift = 0;
 
-// ── Rotation state ────────────────────────────────────────────
-// Accumulated Y-rotation applied on top of lookAt facing.
-// We store it per-object so placed items keep their rotation.
-const objectRotations = new WeakMap(); // THREE.Group → accumulated radians
-let previewRotation = 0; // current preview object rotation
+// ── Rotation maps ─────────────────────────────────────────────
+// userRotations  → user-applied delta (radians), used while object is active
+// frozenRotations → full absolute rotation.y saved at the moment of placement/confirmation
+const userRotations = new WeakMap();
+const frozenRotations = new WeakMap();
 
 const ROT_STEP = Math.PI / 12; // 15° per tap
-const ROT_SPEED = Math.PI / 60; // ~3°/frame while holding (~180°/sec at 60 fps)
-let rotInterval = null; // holds setInterval id for continuous spin
+const ROT_SPEED = Math.PI / 60; // ~180°/sec continuous
+let rotInterval = null;
 
-// ─── Helpers ─────────────────────────────────────────────────
+// ─── Key fix: compute camera-facing angle with atan2 ─────────
+// This replaces lookAt()+rotateY() which caused the object to
+// jump/float the moment it was confirmed, because lookAt sets a
+// full quaternion and rotateY then adds a LOCAL delta — the two
+// fight each other and produce a different result than just setting
+// rotation.y directly. atan2 gives a clean absolute world-space
+// angle that stays consistent whether the object is moving or placed.
+function faceCameraY(objPos, camPos) {
+  return Math.atan2(camPos.x - objPos.x, camPos.z - objPos.z);
+}
+
+// Position obj on the floor and orient it: camera-facing + user delta.
+// Called every frame for preview/selected objects.
+function positionObject(obj, camPos) {
+  obj.position.set(floorPos.x, floorPos.y + modelLift, floorPos.z);
+  const baseAngle = faceCameraY(obj.position, camPos);
+  const userDelta = userRotations.get(obj) ?? 0;
+  obj.rotation.set(0, baseAngle + userDelta, 0); // clean, no accumulation
+}
+
+// ─── Rotation UI helpers ──────────────────────────────────────
+function activeRotTarget() {
+  if (appMode === "previewing" && previewObj) return previewObj;
+  if (appMode === "selected" && selectedObj) return selectedObj;
+  return null;
+}
+
+function updateRotUI() {
+  const target = activeRotTarget();
+  if (!target) {
+    aRotL.classList.add("dim");
+    aRotR.classList.add("dim");
+    rotLabel.classList.remove("on");
+    return;
+  }
+  aRotL.classList.remove("dim");
+  aRotR.classList.remove("dim");
+  const deg = Math.round(
+    (((userRotations.get(target) ?? 0) * 180) / Math.PI + 3600) % 360,
+  );
+  rotLabel.textContent = `${deg}°`;
+  rotLabel.classList.add("on");
+}
+
+function rotate(delta) {
+  const target = activeRotTarget();
+  if (!target) return;
+  userRotations.set(target, (userRotations.get(target) ?? 0) + delta);
+  updateRotUI();
+}
+
+function startSpin(dir, btn) {
+  if (rotInterval) return;
+  btn.classList.add("spinning");
+  rotInterval = setInterval(() => rotate(dir * ROT_SPEED), 16);
+}
+function stopSpin() {
+  if (rotInterval) {
+    clearInterval(rotInterval);
+    rotInterval = null;
+  }
+  aRotL.classList.remove("spinning");
+  aRotR.classList.remove("spinning");
+}
+
+function wireRotBtn(btn, dir) {
+  btn.addEventListener(
+    "touchstart",
+    (e) => {
+      e.preventDefault();
+      rotate(dir * ROT_STEP);
+      startSpin(dir, btn);
+    },
+    { passive: false },
+  );
+  btn.addEventListener("touchend", stopSpin, { passive: true });
+  btn.addEventListener("touchcancel", stopSpin, { passive: true });
+  btn.addEventListener("mousedown", () => {
+    rotate(dir * ROT_STEP);
+    startSpin(dir, btn);
+  });
+  btn.addEventListener("mouseup", stopSpin);
+  btn.addEventListener("mouseleave", stopSpin);
+}
+wireRotBtn(aRotL, -1);
+wireRotBtn(aRotR, +1);
+
+// ─── General UI helpers ───────────────────────────────────────
 function setPlaceIcon(s) {
   icoAim.style.display = s === "aim" ? "" : "none";
   icoCheck.style.display = s === "check" ? "" : "none";
@@ -1257,98 +1206,12 @@ function setScan(on) {
   sr2.classList.toggle("on", on);
 }
 
-// Returns the object that should receive rotation right now, or null.
-function activeRotTarget() {
-  if (appMode === "previewing" && previewObj) return previewObj;
-  if (appMode === "selected" && selectedObj) return selectedObj;
-  return null;
-}
-
-// Show/hide angle label and dim rotate buttons.
-function updateRotUI() {
-  const target = activeRotTarget();
-  if (!target) {
-    aRotL.classList.add("dim");
-    aRotR.classList.add("dim");
-    rotLabel.classList.remove("on");
-    return;
-  }
-  aRotL.classList.remove("dim");
-  aRotR.classList.remove("dim");
-
-  const rad = objectRotations.get(target) ?? 0;
-  const deg = Math.round(((rad * 180) / Math.PI + 360 * 10) % 360);
-  rotLabel.textContent = `${deg}°`;
-  rotLabel.classList.add("on");
-}
-
-// Apply stored rotation to an object (on top of its lookAt Y).
-// We write directly to rotationY so it survives the per-frame lookAt update.
-// Strategy: store the extra rotation and add it inside the render loop.
-function applyRotation(obj, radians) {
-  objectRotations.set(obj, radians);
-}
-
-// Rotate active target by delta radians.
-function rotate(delta) {
-  const target = activeRotTarget();
-  if (!target) return;
-
-  const current = objectRotations.get(target) ?? 0;
-  const next = current + delta;
-  applyRotation(target, next);
-  updateRotUI();
-}
-
-// ── Hold-to-spin helpers ──────────────────────────────────────
-function startSpin(dir, btn) {
-  if (rotInterval) return;
-  btn.classList.add("spinning");
-  rotInterval = setInterval(() => rotate(dir * ROT_SPEED), 16);
-}
-function stopSpin() {
-  if (rotInterval) {
-    clearInterval(rotInterval);
-    rotInterval = null;
-  }
-  aRotL.classList.remove("spinning");
-  aRotR.classList.remove("spinning");
-}
-
-// Tap = single step; hold = continuous spin.
-function wireRotBtn(btn, dir) {
-  // Touch
-  btn.addEventListener(
-    "touchstart",
-    (e) => {
-      e.preventDefault();
-      rotate(dir * ROT_STEP); // immediate step on touch
-      startSpin(dir, btn);
-    },
-    { passive: false },
-  );
-  btn.addEventListener("touchend", stopSpin, { passive: true });
-  btn.addEventListener("touchcancel", stopSpin, { passive: true });
-
-  // Mouse (desktop testing)
-  btn.addEventListener("mousedown", () => {
-    rotate(dir * ROT_STEP);
-    startSpin(dir, btn);
-  });
-  btn.addEventListener("mouseup", stopSpin);
-  btn.addEventListener("mouseleave", stopSpin);
-}
-
-wireRotBtn(aRotL, -1); // counter-clockwise
-wireRotBtn(aRotR, +1); // clockwise
-
 // ─── Chip rail ────────────────────────────────────────────────
 function buildRail() {
   chipRail.innerHTML = "";
   products.forEach((p) => {
     const c = document.createElement("div");
     c.className = "p-chip" + (p.id === activeProductId ? " active" : "");
-
     const thumb = document.createElement("div");
     thumb.className = "p-thumb";
     if (p.imageUrl) {
@@ -1364,18 +1227,14 @@ function buildRail() {
     } else {
       thumb.textContent = p.emoji;
     }
-
     const nameEl = document.createElement("div");
     nameEl.className = "p-name";
     nameEl.textContent = p.name;
-
     const info = document.createElement("div");
     info.className = "p-info";
     info.appendChild(nameEl);
-
     c.appendChild(thumb);
     c.appendChild(info);
-
     c.addEventListener("click", () => {
       activeProductId = p.id;
       document
@@ -1384,7 +1243,6 @@ function buildRail() {
       c.classList.add("active");
       loadModel(p.url);
     });
-
     chipRail.appendChild(c);
   });
 }
@@ -1397,7 +1255,6 @@ function loadModel(url) {
   }
   gltfScene = null;
   appMode = "idle";
-  previewRotation = 0;
   topStatus.textContent = "Loading…";
   setHint(null);
   updateRotUI();
@@ -1410,15 +1267,12 @@ function loadModel(url) {
       probe.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(probe);
       scene.remove(probe);
-
       const size = new THREE.Vector3();
       box.getSize(size);
       const nativeHeight = size.y;
-
       if (nativeHeight < 0.01) modelScale = 1.0 / nativeHeight;
       else if (nativeHeight > 10) modelScale = 0.01;
       else modelScale = 1.0;
-
       modelLift = -box.min.y * modelScale;
       gltfScene = gltf.scene;
       startPreview();
@@ -1436,8 +1290,7 @@ function startPreview() {
   g.visible = false;
   scene.add(g);
   previewObj = g;
-  previewRotation = 0;
-  applyRotation(g, 0);
+  userRotations.set(g, 0); // fresh user delta
   appMode = "previewing";
   setPlaceIcon("aim");
   setScan(true);
@@ -1449,6 +1302,10 @@ function startPreview() {
 
 function doConfirm() {
   if (appMode === "previewing" && previewObj && floorFound) {
+    // ── Freeze exact rotation.y the object has RIGHT NOW ──
+    // positionObject() already set it to (faceCameraY + userDelta),
+    // so this captures the correct final angle with zero drift.
+    frozenRotations.set(previewObj, previewObj.rotation.y);
     placedList.push(previewObj);
     previewObj = null;
     appMode = "idle";
@@ -1464,6 +1321,7 @@ function doConfirm() {
       setScan(false);
     }, 2000);
   } else if (appMode === "selected" && selectedObj && floorFound) {
+    frozenRotations.set(selectedObj, selectedObj.rotation.y);
     selectedObj = null;
     appMode = "idle";
     moveBanner.style.display = "none";
@@ -1477,11 +1335,10 @@ function doConfirm() {
   }
 }
 
-// ─── XR session events ────────────────────────────────────────
+// ─── XR session ───────────────────────────────────────────────
 renderer.xr.addEventListener("sessionstart", () => {
   const arBtnEl = document.getElementById("ARButton");
   if (arBtnEl) arBtnEl.remove();
-
   startScreen.style.display = "none";
   uiTop.classList.add("on");
   uiBottom.classList.add("on");
@@ -1500,27 +1357,24 @@ renderer.xr.addEventListener("sessionstart", () => {
       doConfirm();
       return;
     }
-
     if (appMode === "idle" && placedList.length > 0) {
       const xrCamera = renderer.xr.getCamera();
       raycaster.setFromCamera({ x: 0, y: 0 }, xrCamera);
-
       const targets = [];
-      placedList.forEach((obj) => {
+      placedList.forEach((obj) =>
         obj.traverse((child) => {
           if (child.isMesh) targets.push(child);
-        });
-      });
-
+        }),
+      );
       const hits = raycaster.intersectObjects(targets, false);
       if (hits.length > 0) {
         const hitMesh = hits[0].object;
         const hitObj = placedList.find((obj) => {
-          let found = false;
-          obj.traverse((child) => {
-            if (child === hitMesh) found = true;
+          let f = false;
+          obj.traverse((c) => {
+            if (c === hitMesh) f = true;
           });
-          return found;
+          return f;
         });
         if (hitObj) {
           selectedObj = hitObj;
@@ -1643,6 +1497,7 @@ renderer.setAnimationLoop((_, frame) => {
 
     if (hitTestSource) {
       const hits = frame.getHitTestResults(hitTestSource);
+
       if (hits.length > 0) {
         const m = hits[0].getPose(refSpace).transform.matrix;
         reticle.visible = true;
@@ -1655,26 +1510,13 @@ renderer.setAnimationLoop((_, frame) => {
 
         if (appMode === "previewing" && previewObj) {
           previewObj.visible = true;
-          previewObj.position.set(
-            floorPos.x,
-            floorPos.y + modelLift,
-            floorPos.z,
-          );
-          // lookAt to face camera, then add user rotation on top
-          previewObj.lookAt(camPos.x, previewObj.position.y, camPos.z);
-          previewObj.rotateY(objectRotations.get(previewObj) ?? 0);
+          positionObject(previewObj, camPos); // atan2-based, no accumulation
           setScan(false);
           topStatus.textContent = "Tap ✓ to place";
         }
 
         if (appMode === "selected" && selectedObj) {
-          selectedObj.position.set(
-            floorPos.x,
-            floorPos.y + modelLift,
-            floorPos.z,
-          );
-          selectedObj.lookAt(camPos.x, selectedObj.position.y, camPos.z);
-          selectedObj.rotateY(objectRotations.get(selectedObj) ?? 0);
+          positionObject(selectedObj, camPos); // same function → same angle at confirmation
         }
       } else {
         reticle.visible = false;
@@ -1685,17 +1527,18 @@ renderer.setAnimationLoop((_, frame) => {
         }
       }
 
-      // Apply stored rotation to all PLACED (idle) objects every frame
-      // so they keep their angle when not being moved.
+      // ── Idle placed objects: hold their frozen angle, never drift ──
+      // frozenRotations holds (faceCameraY + userDelta) captured at doConfirm(),
+      // which is exactly what positionObject() computed on the last active frame.
+      // Setting rotation.y here is safe because position never changes for idle objects.
       placedList.forEach((obj) => {
         if (obj !== selectedObj) {
-          const rot = objectRotations.get(obj) ?? 0;
-          // Idle objects don't get lookAt each frame, so we set rotationY directly.
-          obj.rotation.y = rot;
+          obj.rotation.y = frozenRotations.get(obj) ?? 0;
         }
       });
     }
   }
+
   renderer.render(scene, camera);
 });
 
