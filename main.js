@@ -817,6 +817,11 @@ document.body.appendChild(arBtn);
 const startScreen = document.createElement("div");
 startScreen.id = "start-screen";
 startScreen.innerHTML = `
+ <img
+    id="start-logo"
+    src="/ar_logo.png"
+    alt="CasaDeco AR"
+  />
   <h1>CasaDeco AR</h1>
   <p>Visualise furniture in your space</p>
   <button id="btn-start-ar">Start AR Experience</button>`;
@@ -849,6 +854,18 @@ style.textContent = `
   #start-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0e0e10;z-index:1000;}
   #start-screen h1{font-family:var(--f-display);font-size:32px;font-weight:600;color:var(--sand);letter-spacing:0.02em;margin:0;}
   #start-screen p{font-family:var(--f-body);font-size:13px;color:var(--muted);margin:0;}
+  #start-logo {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    margin-bottom: 8px;
+    /* subtle fade-in */
+    animation: logoIn 0.8s ease both;
+  }
+  @keyframes logoIn {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
   #btn-start-ar{margin-top:8px;padding:14px 40px;background:var(--gold);color:var(--ink);font-family:var(--f-body);font-size:14px;font-weight:600;letter-spacing:0.04em;border:none;border-radius:50px;cursor:pointer;box-shadow:0 8px 32px var(--gold-glow);transition:transform 0.15s;}
   #btn-start-ar:active{transform:scale(0.95);}
 
