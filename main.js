@@ -863,7 +863,7 @@ import { ARButton } from "three/addons/webxr/ARButton.js";
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
   alpha: true,
-  preserveDrawingBuffer: true, // required for toDataURL()
+  preserveDrawingBuffer: true,
 });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -944,7 +944,6 @@ style.textContent = `
   #btn-stop{padding:8px 18px;background:rgba(217,95,95,0.18);border:1px solid rgba(217,95,95,0.35);border-radius:50px;color:#E07070;font-family:var(--f-body);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.15s;backdrop-filter:var(--blur);}
   #btn-stop:active{background:rgba(217,95,95,0.32);}
 
-  /* ── Screenshot button ── */
   #btn-screenshot {
     position: fixed; top: 78px; right: 16px;
     width: 46px; height: 46px; border-radius: 50%;
@@ -958,7 +957,6 @@ style.textContent = `
   #btn-screenshot.on { display: flex; }
   #btn-screenshot:active { transform: scale(0.82); background: rgba(201,169,110,0.18); }
 
-  /* Shutter flash */
   #shutter-flash {
     position: fixed; inset: 0; background: #fff;
     opacity: 0; pointer-events: none; z-index: 9000;
@@ -966,7 +964,6 @@ style.textContent = `
   }
   #shutter-flash.fire { opacity: 1; }
 
-  /* ── Toast ── */
   #shot-toast {
     position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
     font-family: var(--f-body); font-size: 13px; font-weight: 600;
@@ -978,7 +975,6 @@ style.textContent = `
   #shot-toast.ok  { color: var(--ink); background: var(--gold); box-shadow: 0 4px 20px var(--gold-glow); opacity: 1; }
   #shot-toast.err { color: #fff; background: var(--red); opacity: 1; }
 
-  /* ── iOS save overlay ── */
   #ios-save-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.82);
     display: none; flex-direction: column; align-items: center; justify-content: flex-end;
@@ -1126,10 +1122,6 @@ function showToast(msg, type = "ok") {
 }
 
 // ── iOS save overlay ──────────────────────────────────────────
-// On iOS, <a download> is ignored and Web Share opens social apps.
-// Instead we show a full-screen image preview with a long-press hint,
-// plus an "Open image" button that opens the dataURL in a new tab
-// where the user can long-press → Save to Photos.
 const iosSaveOverlay = document.createElement("div");
 iosSaveOverlay.id = "ios-save-overlay";
 iosSaveOverlay.innerHTML = `
@@ -1149,26 +1141,27 @@ document.getElementById("ios-cancel-btn").addEventListener("click", () => {
 
 // ── Detect platform ───────────────────────────────────────────
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isAndroid = /Android/.test(navigator.userAgent);
 
-// ── Core screenshot function ──────────────────────────────────
-async function takeScreenshot() {
-  // Render a fresh frame so the buffer has latest pixels
-  renderer.render(scene, camera);
+// ── Screenshot flag (captured inside animation loop after XR render) ──
+let pendingScreenshot = false;
 
+function takeScreenshot() {
+  // Just set the flag — actual capture happens after the XR render in the animation loop
+  pendingScreenshot = true;
+
+  // Shutter flash for immediate tactile feedback
+  shutterFlash.classList.add("fire");
+  setTimeout(() => shutterFlash.classList.remove("fire"), 200);
+}
+
+function captureAndSave() {
   const canvas = renderer.domElement;
   const dataUrl = canvas.toDataURL("image/png");
 
-  // Shutter flash
-  shutterFlash.classList.add("fire");
-  setTimeout(() => shutterFlash.classList.remove("fire"), 200);
-
   if (isIOS) {
-    // ── iOS: show preview overlay with long-press + open-in-tab option ──
     const imgEl = document.getElementById("ios-save-img");
     imgEl.src = dataUrl;
     iosSaveOverlay.classList.add("on");
-
     document.getElementById("ios-open-btn").onclick = () => {
       window.open(dataUrl, "_blank");
       iosSaveOverlay.classList.remove("on");
@@ -1177,9 +1170,7 @@ async function takeScreenshot() {
     return;
   }
 
-  // ── Android / desktop: direct download ───────────────────────
-  // On Android Chrome this lands in Downloads which is visible
-  // in the Gallery app under the "Downloads" album.
+  // Android / desktop: direct download
   try {
     const link = document.createElement("a");
     link.href = dataUrl;
@@ -1735,6 +1726,7 @@ window.setModel = (url) => {
 window.removeLastObject = () => aUndo.click();
 window.clearAll = () => aDel.click();
 
+// ─── Animation loop ───────────────────────────────────────────
 renderer.setAnimationLoop((_, frame) => {
   if (frame) {
     const refSpace = renderer.xr.getReferenceSpace();
@@ -1781,7 +1773,15 @@ renderer.setAnimationLoop((_, frame) => {
       });
     }
   }
+
+  // ── Render the scene (XR or normal) ──────────────────────────
   renderer.render(scene, camera);
+
+  // ── Capture screenshot AFTER render so buffer has real pixels ──
+  if (pendingScreenshot) {
+    pendingScreenshot = false;
+    captureAndSave();
+  }
 });
 
 window.addEventListener("resize", () => {
