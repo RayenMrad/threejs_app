@@ -1174,7 +1174,8 @@ function buildCompositeDataUrl() {
   }
 
   // ── Layer 2: WebGL scene (transparent bg + 3D furniture) ─────
-  ctx.drawImage(glCanvas, 0, 0);
+  ctx.globalAlpha = 1.0;
+  ctx.drawImage(glCanvas, 0, 0, w, h); // explicit w/h avoids scaling bugs
 
   return out.toDataURL("image/jpeg", 0.92);
 }
@@ -1822,6 +1823,10 @@ renderer.setAnimationLoop((_, frame) => {
   // ── After render: WebGL buffer has fresh 3D pixels → composite ──
   if (pendingScreenshot) {
     pendingScreenshot = false;
+    const xrEnabled = renderer.xr.enabled;
+    renderer.xr.enabled = false;
+    renderer.render(scene, camera); // ← writes to main canvas
+    renderer.xr.enabled = xrEnabled;
     doSave();
   }
 });
