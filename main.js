@@ -38,6 +38,11 @@
 // const startScreen = document.createElement("div");
 // startScreen.id = "start-screen";
 // startScreen.innerHTML = `
+//  <img
+//     id="start-logo"
+//     src="/ar_logo.png"
+//     alt="CasaDeco AR"
+//   />
 //   <h1>CasaDeco AR</h1>
 //   <p>Visualise furniture in your space</p>
 //   <button id="btn-start-ar">Start AR Experience</button>`;
@@ -70,6 +75,18 @@
 //   #start-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0e0e10;z-index:1000;}
 //   #start-screen h1{font-family:var(--f-display);font-size:32px;font-weight:600;color:var(--sand);letter-spacing:0.02em;margin:0;}
 //   #start-screen p{font-family:var(--f-body);font-size:13px;color:var(--muted);margin:0;}
+//   #start-logo {
+//     width: 180px;
+//     height: 180px;
+//     object-fit: contain;
+//     margin-bottom: 8px;
+//     /* subtle fade-in */
+//     animation: logoIn 0.8s ease both;
+//   }
+//   @keyframes logoIn {
+//     from { opacity: 0; transform: scale(0.88); }
+//     to   { opacity: 1; transform: scale(1); }
+//   }
 //   #btn-start-ar{margin-top:8px;padding:14px 40px;background:var(--gold);color:var(--ink);font-family:var(--f-body);font-size:14px;font-weight:600;letter-spacing:0.04em;border:none;border-radius:50px;cursor:pointer;box-shadow:0 8px 32px var(--gold-glow);transition:transform 0.15s;}
 //   #btn-start-ar:active{transform:scale(0.95);}
 
@@ -93,9 +110,60 @@
 
 //   #move-banner{position:fixed;bottom:230px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink);background:var(--gold);padding:6px 20px;border-radius:50px;z-index:500;pointer-events:none;display:none;white-space:nowrap;box-shadow:0 4px 20px var(--gold-glow);}
 
-//   #ui-bottom{position:fixed;bottom:0;left:0;right:0;display:none;flex-direction:column;gap:12px;background:var(--glass-dark);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-top:1px solid rgba(255,255,255,0.07);border-radius:22px 22px 0 0;padding:12px 22px 44px;z-index:500;}
-//   #ui-bottom.on{display:flex;animation:slideUp 0.38s cubic-bezier(0.16,1,0.3,1);}
-//   #drag-handle{width:34px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 2px;}
+//   /* ── Bottom panel ── */
+//   #ui-bottom {
+//     position: fixed; bottom: 0; left: 0; right: 0;
+//     display: none; flex-direction: column; gap: 12px;
+//     background: var(--glass-dark);
+//     backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+//     border-top: 1px solid rgba(255,255,255,0.07);
+//     border-radius: 22px 22px 0 0;
+//     padding: 0 22px 44px;
+//     z-index: 500;
+//     /* smooth open/close */
+//     transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+//     transform: translateY(0);
+//   }
+//   #ui-bottom.on { display: flex; }
+//   /* collapsed: slide down so only the handle tab peeks out */
+//   #ui-bottom.collapsed { transform: translateY(calc(100% - 36px)); }
+
+//   /* ── Toggle tab — always visible when panel is open ── */
+//   #panel-toggle {
+//     display: flex; align-items: center; justify-content: center;
+//     width: 100%; padding: 10px 0 6px; cursor: pointer;
+//     /* extends the tap area without adding height to the panel */
+//     margin-bottom: 2px;
+//   }
+//   /* Animated chevron pill */
+//   #panel-toggle-inner {
+//     display: flex; flex-direction: column; align-items: center; gap: 3px;
+//   }
+//   #drag-handle {
+//     width: 34px; height: 3px;
+//     background: rgba(255,255,255,0.25);
+//     border-radius: 2px;
+//     transition: background 0.2s;
+//   }
+//   #panel-toggle:active #drag-handle { background: rgba(255,255,255,0.55); }
+
+//   /* chevron arrow */
+//   #toggle-chevron {
+//     width: 0; height: 0;
+//     border-left: 5px solid transparent;
+//     border-right: 5px solid transparent;
+//     border-bottom: 5px solid rgba(255,255,255,0.35);
+//     transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.2s;
+//     /* default: pointing UP (panel open → tap to close) */
+//     transform: rotate(0deg);
+//   }
+//   /* when collapsed: chevron points DOWN (tap to open) */
+//   #ui-bottom.collapsed #toggle-chevron {
+//     transform: rotate(180deg);
+//   }
+
+//   /* hide inner content when collapsed so it can't be tapped */
+//   #ui-bottom.collapsed #panel-content { visibility: hidden; }
 
 //   .sec-label{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
 
@@ -168,49 +236,68 @@
 // const uiBottom = document.createElement("div");
 // uiBottom.id = "ui-bottom";
 // uiBottom.innerHTML = `
-//   <div id="drag-handle"></div>
-//   <div>
-//     <div class="sec-label">Products</div>
-//     <div id="chip-rail"></div>
+//   <!-- Tap anywhere on this strip to toggle the panel -->
+//   <div id="panel-toggle">
+//     <div id="panel-toggle-inner">
+//       <div id="drag-handle"></div>
+//       <div id="toggle-chevron"></div>
+//     </div>
 //   </div>
-//   <div id="act-row">
-//     <button class="a-btn dim" id="a-rot-l" title="Rotate left">
-//       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-//         <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/><polyline points="2 17 2.5 12 7.5 13.5"/>
-//       </svg>
-//     </button>
-//     <button class="a-btn" id="a-undo">
-//       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-//         <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
-//       </svg>
-//     </button>
-//     <button class="a-btn" id="a-place">
-//       <svg id="ico-aim" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
-//         <circle cx="12" cy="12" r="2.2"/>
-//         <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-//         <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-//       </svg>
-//       <svg id="ico-check" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-//         <polyline points="20 6 9 17 4 12"/>
-//       </svg>
-//       <svg id="ico-move" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-//         <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/>
-//         <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
-//       </svg>
-//     </button>
-//     <button class="a-btn" id="a-del">
-//       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D95F5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-//         <polyline points="3 6 5 6 21 6"/>
-//         <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
-//       </svg>
-//     </button>
-//     <button class="a-btn dim" id="a-rot-r" title="Rotate right">
-//       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-//         <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/><polyline points="22 17 21.5 12 16.5 13.5"/>
-//       </svg>
-//     </button>
-//   </div>`;
+
+//   <!-- Everything below here is hidden when collapsed -->
+//   <div id="panel-content">
+//     <div style="padding-top:4px">
+//       <div class="sec-label">Products</div>
+//       <div id="chip-rail"></div>
+//     </div>
+//     <div id="act-row">
+//       <button class="a-btn dim" id="a-rot-l" title="Rotate left">
+//         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+//           <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/><polyline points="2 17 2.5 12 7.5 13.5"/>
+//         </svg>
+//       </button>
+//       <button class="a-btn" id="a-undo">
+//         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+//           <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+//         </svg>
+//       </button>
+//       <button class="a-btn" id="a-place">
+//         <svg id="ico-aim" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
+//           <circle cx="12" cy="12" r="2.2"/>
+//           <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+//           <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+//         </svg>
+//         <svg id="ico-check" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+//           <polyline points="20 6 9 17 4 12"/>
+//         </svg>
+//         <svg id="ico-move" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+//           <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/>
+//           <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+//         </svg>
+//       </button>
+//       <button class="a-btn" id="a-del">
+//         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D95F5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+//           <polyline points="3 6 5 6 21 6"/>
+//           <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+//         </svg>
+//       </button>
+//       <button class="a-btn dim" id="a-rot-r" title="Rotate right">
+//         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+//           <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/><polyline points="22 17 21.5 12 16.5 13.5"/>
+//         </svg>
+//       </button>
+//     </div>
+//   </div>
+// `;
 // document.body.appendChild(uiBottom);
+
+// // ─── Panel toggle logic ───────────────────────────────────────
+// let panelCollapsed = false;
+
+// document.getElementById("panel-toggle").addEventListener("click", () => {
+//   panelCollapsed = !panelCollapsed;
+//   uiBottom.classList.toggle("collapsed", panelCollapsed);
+// });
 
 // // ─── Refs ─────────────────────────────────────────────────────
 // const topStatus = document.getElementById("top-status");
@@ -321,37 +408,26 @@
 //   modelScale = 1,
 //   modelLift = 0;
 
-// // ── Rotation maps ─────────────────────────────────────────────
-// // userRotations  → user-applied delta (radians), used while object is active
-// // frozenRotations → full absolute rotation.y saved at the moment of placement/confirmation
 // const userRotations = new WeakMap();
 // const frozenRotations = new WeakMap();
 
-// const ROT_STEP = Math.PI / 12; // 15° per tap
-// const ROT_SPEED = Math.PI / 60; // ~180°/sec continuous
+// const ROT_STEP = Math.PI / 12;
+// const ROT_SPEED = Math.PI / 60;
 // let rotInterval = null;
 
-// // ─── Key fix: compute camera-facing angle with atan2 ─────────
-// // This replaces lookAt()+rotateY() which caused the object to
-// // jump/float the moment it was confirmed, because lookAt sets a
-// // full quaternion and rotateY then adds a LOCAL delta — the two
-// // fight each other and produce a different result than just setting
-// // rotation.y directly. atan2 gives a clean absolute world-space
-// // angle that stays consistent whether the object is moving or placed.
+// // ─── Positioning ─────────────────────────────────────────────
 // function faceCameraY(objPos, camPos) {
 //   return Math.atan2(camPos.x - objPos.x, camPos.z - objPos.z);
 // }
 
-// // Position obj on the floor and orient it: camera-facing + user delta.
-// // Called every frame for preview/selected objects.
 // function positionObject(obj, camPos) {
 //   obj.position.set(floorPos.x, floorPos.y + modelLift, floorPos.z);
 //   const baseAngle = faceCameraY(obj.position, camPos);
 //   const userDelta = userRotations.get(obj) ?? 0;
-//   obj.rotation.set(0, baseAngle + userDelta, 0); // clean, no accumulation
+//   obj.rotation.set(0, baseAngle + userDelta, 0);
 // }
 
-// // ─── Rotation UI helpers ──────────────────────────────────────
+// // ─── Rotation UI ─────────────────────────────────────────────
 // function activeRotTarget() {
 //   if (appMode === "previewing" && previewObj) return previewObj;
 //   if (appMode === "selected" && selectedObj) return selectedObj;
@@ -418,7 +494,7 @@
 // wireRotBtn(aRotL, -1);
 // wireRotBtn(aRotR, +1);
 
-// // ─── General UI helpers ───────────────────────────────────────
+// // ─── General UI ───────────────────────────────────────────────
 // function setPlaceIcon(s) {
 //   icoAim.style.display = s === "aim" ? "" : "none";
 //   icoCheck.style.display = s === "check" ? "" : "none";
@@ -520,7 +596,7 @@
 //   g.visible = false;
 //   scene.add(g);
 //   previewObj = g;
-//   userRotations.set(g, 0); // fresh user delta
+//   userRotations.set(g, 0);
 //   appMode = "previewing";
 //   setPlaceIcon("aim");
 //   setScan(true);
@@ -528,13 +604,15 @@
 //   setHint(null);
 //   moveBanner.style.display = "none";
 //   updateRotUI();
+//   // auto-expand panel when a new model is loaded
+//   if (panelCollapsed) {
+//     panelCollapsed = false;
+//     uiBottom.classList.remove("collapsed");
+//   }
 // }
 
 // function doConfirm() {
 //   if (appMode === "previewing" && previewObj && floorFound) {
-//     // ── Freeze exact rotation.y the object has RIGHT NOW ──
-//     // positionObject() already set it to (faceCameraY + userDelta),
-//     // so this captures the correct final angle with zero drift.
 //     frozenRotations.set(previewObj, previewObj.rotation.y);
 //     placedList.push(previewObj);
 //     previewObj = null;
@@ -572,6 +650,9 @@
 //   startScreen.style.display = "none";
 //   uiTop.classList.add("on");
 //   uiBottom.classList.add("on");
+//   // always start expanded
+//   panelCollapsed = false;
+//   uiBottom.classList.remove("collapsed");
 //   buildRail();
 //   loadModel(products.find((p) => p.id === activeProductId).url);
 
@@ -687,6 +768,7 @@
 //     stopSpin();
 //     uiTop.classList.remove("on");
 //     uiBottom.classList.remove("on");
+//     panelCollapsed = false;
 //     setScan(false);
 //     moveBanner.style.display = "none";
 //     rotLabel.classList.remove("on");
@@ -740,13 +822,13 @@
 
 //         if (appMode === "previewing" && previewObj) {
 //           previewObj.visible = true;
-//           positionObject(previewObj, camPos); // atan2-based, no accumulation
+//           positionObject(previewObj, camPos);
 //           setScan(false);
 //           topStatus.textContent = "Tap ✓ to place";
 //         }
 
 //         if (appMode === "selected" && selectedObj) {
-//           positionObject(selectedObj, camPos); // same function → same angle at confirmation
+//           positionObject(selectedObj, camPos);
 //         }
 //       } else {
 //         reticle.visible = false;
@@ -757,10 +839,6 @@
 //         }
 //       }
 
-//       // ── Idle placed objects: hold their frozen angle, never drift ──
-//       // frozenRotations holds (faceCameraY + userDelta) captured at doConfirm(),
-//       // which is exactly what positionObject() computed on the last active frame.
-//       // Setting rotation.y here is safe because position never changes for idle objects.
 //       placedList.forEach((obj) => {
 //         if (obj !== selectedObj) {
 //           obj.rotation.y = frozenRotations.get(obj) ?? 0;
@@ -782,7 +860,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { ARButton } from "three/addons/webxr/ARButton.js";
 
 // ─── Renderer ────────────────────────────────────────────────
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true,
+  preserveDrawingBuffer: true, // ← REQUIRED for screenshots
+});
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true;
@@ -817,11 +899,7 @@ document.body.appendChild(arBtn);
 const startScreen = document.createElement("div");
 startScreen.id = "start-screen";
 startScreen.innerHTML = `
- <img
-    id="start-logo"
-    src="/ar_logo.png"
-    alt="CasaDeco AR"
-  />
+  <img id="start-logo" src="/ar_logo.png" alt="CasaDeco AR" />
   <h1>CasaDeco AR</h1>
   <p>Visualise furniture in your space</p>
   <button id="btn-start-ar">Start AR Experience</button>`;
@@ -854,18 +932,8 @@ style.textContent = `
   #start-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0e0e10;z-index:1000;}
   #start-screen h1{font-family:var(--f-display);font-size:32px;font-weight:600;color:var(--sand);letter-spacing:0.02em;margin:0;}
   #start-screen p{font-family:var(--f-body);font-size:13px;color:var(--muted);margin:0;}
-  #start-logo {
-    width: 180px;
-    height: 180px;
-    object-fit: contain;
-    margin-bottom: 8px;
-    /* subtle fade-in */
-    animation: logoIn 0.8s ease both;
-  }
-  @keyframes logoIn {
-    from { opacity: 0; transform: scale(0.88); }
-    to   { opacity: 1; transform: scale(1); }
-  }
+  #start-logo{width:180px;height:180px;object-fit:contain;margin-bottom:8px;animation:logoIn 0.8s ease both;}
+  @keyframes logoIn{from{opacity:0;transform:scale(0.88);}to{opacity:1;transform:scale(1);}}
   #btn-start-ar{margin-top:8px;padding:14px 40px;background:var(--gold);color:var(--ink);font-family:var(--f-body);font-size:14px;font-weight:600;letter-spacing:0.04em;border:none;border-radius:50px;cursor:pointer;box-shadow:0 8px 32px var(--gold-glow);transition:transform 0.15s;}
   #btn-start-ar:active{transform:scale(0.95);}
 
@@ -876,6 +944,41 @@ style.textContent = `
   #top-status{font-family:var(--f-body);font-size:11px;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;}
   #btn-stop{padding:8px 18px;background:rgba(217,95,95,0.18);border:1px solid rgba(217,95,95,0.35);border-radius:50px;color:#E07070;font-family:var(--f-body);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.15s;backdrop-filter:var(--blur);}
   #btn-stop:active{background:rgba(217,95,95,0.32);}
+
+  /* ── Screenshot button (floating, top-right below stop) ── */
+  #btn-screenshot {
+    position: fixed; top: 78px; right: 16px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--glass-dark); backdrop-filter: var(--blur);
+    border: 1.5px solid rgba(201,169,110,0.45);
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 500;
+    transition: background 0.15s, transform 0.12s, opacity 0.12s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  }
+  #btn-screenshot.on { display: flex; }
+  #btn-screenshot:active { transform: scale(0.85); opacity: 0.7; }
+
+  /* Flash overlay for shutter effect */
+  #shutter-flash {
+    position: fixed; inset: 0; background: #fff;
+    opacity: 0; pointer-events: none; z-index: 9999;
+    transition: opacity 0.05s;
+  }
+  #shutter-flash.fire { opacity: 0.85; }
+
+  /* Toast notification */
+  #shot-toast {
+    position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
+    font-family: var(--f-body); font-size: 12px; font-weight: 600;
+    color: var(--ink); background: var(--gold);
+    padding: 8px 20px; border-radius: 50px;
+    z-index: 600; pointer-events: none;
+    opacity: 0; white-space: nowrap;
+    transition: opacity 0.25s;
+    box-shadow: 0 4px 20px var(--gold-glow);
+  }
+  #shot-toast.on { opacity: 1; }
 
   .s-ring{position:fixed;top:50%;left:50%;border:1.5px solid var(--gold);border-radius:50%;pointer-events:none;z-index:300;opacity:0;transition:opacity 0.4s;transform:translate(-50%,-56%);}
   .s-ring.on{animation:sPulse 2s ease-in-out infinite;}
@@ -889,60 +992,17 @@ style.textContent = `
 
   #move-banner{position:fixed;bottom:230px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink);background:var(--gold);padding:6px 20px;border-radius:50px;z-index:500;pointer-events:none;display:none;white-space:nowrap;box-shadow:0 4px 20px var(--gold-glow);}
 
-  /* ── Bottom panel ── */
-  #ui-bottom {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    display: none; flex-direction: column; gap: 12px;
-    background: var(--glass-dark);
-    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-    border-top: 1px solid rgba(255,255,255,0.07);
-    border-radius: 22px 22px 0 0;
-    padding: 0 22px 44px;
-    z-index: 500;
-    /* smooth open/close */
-    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
-    transform: translateY(0);
-  }
-  #ui-bottom.on { display: flex; }
-  /* collapsed: slide down so only the handle tab peeks out */
-  #ui-bottom.collapsed { transform: translateY(calc(100% - 36px)); }
+  #ui-bottom{position:fixed;bottom:0;left:0;right:0;display:none;flex-direction:column;gap:12px;background:var(--glass-dark);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-top:1px solid rgba(255,255,255,0.07);border-radius:22px 22px 0 0;padding:0 22px 44px;z-index:500;transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);transform:translateY(0);}
+  #ui-bottom.on{display:flex;}
+  #ui-bottom.collapsed{transform:translateY(calc(100% - 36px));}
 
-  /* ── Toggle tab — always visible when panel is open ── */
-  #panel-toggle {
-    display: flex; align-items: center; justify-content: center;
-    width: 100%; padding: 10px 0 6px; cursor: pointer;
-    /* extends the tap area without adding height to the panel */
-    margin-bottom: 2px;
-  }
-  /* Animated chevron pill */
-  #panel-toggle-inner {
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-  }
-  #drag-handle {
-    width: 34px; height: 3px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 2px;
-    transition: background 0.2s;
-  }
-  #panel-toggle:active #drag-handle { background: rgba(255,255,255,0.55); }
-
-  /* chevron arrow */
-  #toggle-chevron {
-    width: 0; height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-bottom: 5px solid rgba(255,255,255,0.35);
-    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.2s;
-    /* default: pointing UP (panel open → tap to close) */
-    transform: rotate(0deg);
-  }
-  /* when collapsed: chevron points DOWN (tap to open) */
-  #ui-bottom.collapsed #toggle-chevron {
-    transform: rotate(180deg);
-  }
-
-  /* hide inner content when collapsed so it can't be tapped */
-  #ui-bottom.collapsed #panel-content { visibility: hidden; }
+  #panel-toggle{display:flex;align-items:center;justify-content:center;width:100%;padding:10px 0 6px;cursor:pointer;margin-bottom:2px;}
+  #panel-toggle-inner{display:flex;flex-direction:column;align-items:center;gap:3px;}
+  #drag-handle{width:34px;height:3px;background:rgba(255,255,255,0.25);border-radius:2px;transition:background 0.2s;}
+  #panel-toggle:active #drag-handle{background:rgba(255,255,255,0.55);}
+  #toggle-chevron{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:5px solid rgba(255,255,255,0.35);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1),border-color 0.2s;transform:rotate(0deg);}
+  #ui-bottom.collapsed #toggle-chevron{transform:rotate(180deg);}
+  #ui-bottom.collapsed #panel-content{visibility:hidden;}
 
   .sec-label{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
 
@@ -1011,19 +1071,47 @@ const rotLabel = document.createElement("div");
 rotLabel.id = "rot-label";
 document.body.appendChild(rotLabel);
 
+// ── Screenshot button ─────────────────────────────────────────
+const btnScreenshot = document.createElement("button");
+btnScreenshot.id = "btn-screenshot";
+btnScreenshot.title = "Take screenshot";
+btnScreenshot.innerHTML = `
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+       stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8
+             a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+    <circle cx="12" cy="13" r="4"/>
+  </svg>`;
+document.body.appendChild(btnScreenshot);
+
+// ── Shutter flash overlay ─────────────────────────────────────
+const shutterFlash = document.createElement("div");
+shutterFlash.id = "shutter-flash";
+document.body.appendChild(shutterFlash);
+
+// ── Toast notification ────────────────────────────────────────
+const shotToast = document.createElement("div");
+shotToast.id = "shot-toast";
+document.body.appendChild(shotToast);
+
+let toastTimer = null;
+function showToast(msg) {
+  shotToast.textContent = msg;
+  shotToast.classList.add("on");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => shotToast.classList.remove("on"), 2500);
+}
+
 // ─── Bottom bar ───────────────────────────────────────────────
 const uiBottom = document.createElement("div");
 uiBottom.id = "ui-bottom";
 uiBottom.innerHTML = `
-  <!-- Tap anywhere on this strip to toggle the panel -->
   <div id="panel-toggle">
     <div id="panel-toggle-inner">
       <div id="drag-handle"></div>
       <div id="toggle-chevron"></div>
     </div>
   </div>
-
-  <!-- Everything below here is hidden when collapsed -->
   <div id="panel-content">
     <div style="padding-top:4px">
       <div class="sec-label">Products</div>
@@ -1066,13 +1154,11 @@ uiBottom.innerHTML = `
         </svg>
       </button>
     </div>
-  </div>
-`;
+  </div>`;
 document.body.appendChild(uiBottom);
 
-// ─── Panel toggle logic ───────────────────────────────────────
+// ─── Panel toggle ─────────────────────────────────────────────
 let panelCollapsed = false;
-
 document.getElementById("panel-toggle").addEventListener("click", () => {
   panelCollapsed = !panelCollapsed;
   uiBottom.classList.toggle("collapsed", panelCollapsed);
@@ -1092,6 +1178,64 @@ const icoCheck = document.getElementById("ico-check");
 const icoMove = document.getElementById("ico-move");
 const sr1 = document.getElementById("sr1");
 const sr2 = document.getElementById("sr2");
+
+// ─── Screenshot logic ─────────────────────────────────────────
+// Strategy:
+//  1. Render one extra frame so the canvas is up-to-date.
+//  2. Read the WebGL canvas as a PNG data URL.
+//  3. Trigger a shutter flash animation for UX feedback.
+//  4. Try the modern Web Share API first (shows native share sheet
+//     including "Save to Photos" on iOS/Android).
+//  5. Fall back to a hidden <a download> click which works on Android
+//     Chrome and desktop browsers.
+async function takeScreenshot() {
+  // Render a fresh frame so preserveDrawingBuffer has the latest pixels
+  renderer.render(scene, camera);
+
+  // Read pixels from the WebGL canvas
+  const canvas = renderer.domElement;
+  const dataUrl = canvas.toDataURL("image/png");
+
+  // Shutter flash
+  shutterFlash.classList.add("fire");
+  setTimeout(() => shutterFlash.classList.remove("fire"), 150);
+
+  // Convert dataURL → Blob for Web Share API
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  const file = new File([blob], `casadeco_ar_${Date.now()}.png`, {
+    type: "image/png",
+  });
+
+  // Try Web Share API (native share sheet: works on Android Chrome & iOS Safari)
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: "CasaDeco AR",
+        text: "My AR furniture preview — CasaDeco",
+      });
+      showToast("📸 Shared successfully!");
+      return;
+    } catch (err) {
+      // User cancelled share — don't fall through to download
+      if (err.name === "AbortError") return;
+    }
+  }
+
+  // Fallback: trigger a download (Android Chrome saves to Downloads/Gallery)
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `casadeco_ar_${Date.now()}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  showToast("📸 Saved to downloads!");
+}
+
+btnScreenshot.addEventListener("click", takeScreenshot);
 
 // ─── Reticle ─────────────────────────────────────────────────
 const reticle = new THREE.Mesh(
@@ -1198,7 +1342,6 @@ let rotInterval = null;
 function faceCameraY(objPos, camPos) {
   return Math.atan2(camPos.x - objPos.x, camPos.z - objPos.z);
 }
-
 function positionObject(obj, camPos) {
   obj.position.set(floorPos.x, floorPos.y + modelLift, floorPos.z);
   const baseAngle = faceCameraY(obj.position, camPos);
@@ -1212,7 +1355,6 @@ function activeRotTarget() {
   if (appMode === "selected" && selectedObj) return selectedObj;
   return null;
 }
-
 function updateRotUI() {
   const target = activeRotTarget();
   if (!target) {
@@ -1229,14 +1371,12 @@ function updateRotUI() {
   rotLabel.textContent = `${deg}°`;
   rotLabel.classList.add("on");
 }
-
 function rotate(delta) {
   const target = activeRotTarget();
   if (!target) return;
   userRotations.set(target, (userRotations.get(target) ?? 0) + delta);
   updateRotUI();
 }
-
 function startSpin(dir, btn) {
   if (rotInterval) return;
   btn.classList.add("spinning");
@@ -1250,7 +1390,6 @@ function stopSpin() {
   aRotL.classList.remove("spinning");
   aRotR.classList.remove("spinning");
 }
-
 function wireRotBtn(btn, dir) {
   btn.addEventListener(
     "touchstart",
@@ -1383,7 +1522,6 @@ function startPreview() {
   setHint(null);
   moveBanner.style.display = "none";
   updateRotUI();
-  // auto-expand panel when a new model is loaded
   if (panelCollapsed) {
     panelCollapsed = false;
     uiBottom.classList.remove("collapsed");
@@ -1399,14 +1537,14 @@ function doConfirm() {
     moveBanner.style.display = "none";
     setPlaceIcon("check");
     topStatus.textContent = "Placed!";
-    setHint("Tap ↺ to undo · hold ⟳ to rotate · tap ✦ to move");
+    setHint("Tap ↺ to undo · hold ⟳ to rotate · tap 📷 to capture");
     updateRotUI();
     setTimeout(() => {
       setPlaceIcon("aim");
       setHint(null);
       topStatus.textContent = "Tap a product to place another";
       setScan(false);
-    }, 2000);
+    }, 2500);
   } else if (appMode === "selected" && selectedObj && floorFound) {
     frozenRotations.set(selectedObj, selectedObj.rotation.y);
     selectedObj = null;
@@ -1429,7 +1567,7 @@ renderer.xr.addEventListener("sessionstart", () => {
   startScreen.style.display = "none";
   uiTop.classList.add("on");
   uiBottom.classList.add("on");
-  // always start expanded
+  btnScreenshot.classList.add("on"); // show camera button
   panelCollapsed = false;
   uiBottom.classList.remove("collapsed");
   buildRail();
@@ -1547,6 +1685,7 @@ renderer.xr.addEventListener("sessionstart", () => {
     stopSpin();
     uiTop.classList.remove("on");
     uiBottom.classList.remove("on");
+    btnScreenshot.classList.remove("on"); // hide camera button
     panelCollapsed = false;
     setScan(false);
     moveBanner.style.display = "none";
@@ -1588,7 +1727,6 @@ renderer.setAnimationLoop((_, frame) => {
 
     if (hitTestSource) {
       const hits = frame.getHitTestResults(hitTestSource);
-
       if (hits.length > 0) {
         const m = hits[0].getPose(refSpace).transform.matrix;
         reticle.visible = true;
@@ -1605,7 +1743,6 @@ renderer.setAnimationLoop((_, frame) => {
           setScan(false);
           topStatus.textContent = "Tap ✓ to place";
         }
-
         if (appMode === "selected" && selectedObj) {
           positionObject(selectedObj, camPos);
         }
