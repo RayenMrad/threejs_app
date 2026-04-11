@@ -863,7 +863,7 @@ import { ARButton } from "three/addons/webxr/ARButton.js";
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
   alpha: true,
-  preserveDrawingBuffer: true, // ← REQUIRED for screenshots
+  preserveDrawingBuffer: true, // required for toDataURL()
 });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -904,7 +904,6 @@ startScreen.innerHTML = `
   <p>Visualise furniture in your space</p>
   <button id="btn-start-ar">Start AR Experience</button>`;
 document.body.appendChild(startScreen);
-
 document
   .getElementById("btn-start-ar")
   .addEventListener("click", () => arBtn.click());
@@ -945,40 +944,70 @@ style.textContent = `
   #btn-stop{padding:8px 18px;background:rgba(217,95,95,0.18);border:1px solid rgba(217,95,95,0.35);border-radius:50px;color:#E07070;font-family:var(--f-body);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.15s;backdrop-filter:var(--blur);}
   #btn-stop:active{background:rgba(217,95,95,0.32);}
 
-  /* ── Screenshot button (floating, top-right below stop) ── */
+  /* ── Screenshot button ── */
   #btn-screenshot {
     position: fixed; top: 78px; right: 16px;
-    width: 44px; height: 44px; border-radius: 50%;
+    width: 46px; height: 46px; border-radius: 50%;
     background: var(--glass-dark); backdrop-filter: var(--blur);
-    border: 1.5px solid rgba(201,169,110,0.45);
+    border: 1.5px solid rgba(201,169,110,0.5);
     display: none; align-items: center; justify-content: center;
     cursor: pointer; z-index: 500;
-    transition: background 0.15s, transform 0.12s, opacity 0.12s;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    transition: background 0.15s, transform 0.12s, border-color 0.15s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   }
   #btn-screenshot.on { display: flex; }
-  #btn-screenshot:active { transform: scale(0.85); opacity: 0.7; }
+  #btn-screenshot:active { transform: scale(0.82); background: rgba(201,169,110,0.18); }
 
-  /* Flash overlay for shutter effect */
+  /* Shutter flash */
   #shutter-flash {
     position: fixed; inset: 0; background: #fff;
-    opacity: 0; pointer-events: none; z-index: 9999;
-    transition: opacity 0.05s;
+    opacity: 0; pointer-events: none; z-index: 9000;
+    transition: opacity 0.06s ease-out;
   }
-  #shutter-flash.fire { opacity: 0.85; }
+  #shutter-flash.fire { opacity: 1; }
 
-  /* Toast notification */
+  /* ── Toast ── */
   #shot-toast {
-    position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
-    font-family: var(--f-body); font-size: 12px; font-weight: 600;
-    color: var(--ink); background: var(--gold);
-    padding: 8px 20px; border-radius: 50px;
-    z-index: 600; pointer-events: none;
+    position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+    font-family: var(--f-body); font-size: 13px; font-weight: 600;
+    padding: 10px 22px; border-radius: 50px;
+    z-index: 9001; pointer-events: none;
     opacity: 0; white-space: nowrap;
-    transition: opacity 0.25s;
-    box-shadow: 0 4px 20px var(--gold-glow);
+    transition: opacity 0.3s;
   }
-  #shot-toast.on { opacity: 1; }
+  #shot-toast.ok  { color: var(--ink); background: var(--gold); box-shadow: 0 4px 20px var(--gold-glow); opacity: 1; }
+  #shot-toast.err { color: #fff; background: var(--red); opacity: 1; }
+
+  /* ── iOS save overlay ── */
+  #ios-save-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.82);
+    display: none; flex-direction: column; align-items: center; justify-content: flex-end;
+    padding-bottom: 40px; z-index: 9500;
+  }
+  #ios-save-overlay.on { display: flex; }
+  #ios-save-box {
+    width: 88%; background: #1c1c1e; border-radius: 20px;
+    padding: 0; overflow: hidden;
+  }
+  #ios-save-img {
+    width: 100%; max-height: 260px; object-fit: contain;
+    background: #000; display: block; border-radius: 0;
+  }
+  #ios-save-actions {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .ios-action-btn {
+    width: 100%; padding: 16px; border: none; background: none;
+    font-family: var(--f-body); font-size: 15px; font-weight: 500;
+    color: var(--gold); cursor: pointer; border-top: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.15s;
+  }
+  .ios-action-btn:active { background: rgba(255,255,255,0.06); }
+  .ios-action-btn.cancel { color: var(--red); font-weight: 600; }
+  #ios-save-hint {
+    font-family: var(--f-body); font-size: 11px; color: var(--muted);
+    padding: 10px 16px 4px; text-align: center;
+  }
 
   .s-ring{position:fixed;top:50%;left:50%;border:1.5px solid var(--gold);border-radius:50%;pointer-events:none;z-index:300;opacity:0;transition:opacity 0.4s;transform:translate(-50%,-56%);}
   .s-ring.on{animation:sPulse 2s ease-in-out infinite;}
@@ -1000,12 +1029,11 @@ style.textContent = `
   #panel-toggle-inner{display:flex;flex-direction:column;align-items:center;gap:3px;}
   #drag-handle{width:34px;height:3px;background:rgba(255,255,255,0.25);border-radius:2px;transition:background 0.2s;}
   #panel-toggle:active #drag-handle{background:rgba(255,255,255,0.55);}
-  #toggle-chevron{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:5px solid rgba(255,255,255,0.35);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1),border-color 0.2s;transform:rotate(0deg);}
+  #toggle-chevron{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:5px solid rgba(255,255,255,0.35);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);transform:rotate(0deg);}
   #ui-bottom.collapsed #toggle-chevron{transform:rotate(180deg);}
   #ui-bottom.collapsed #panel-content{visibility:hidden;}
 
   .sec-label{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-
   #chip-rail{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 0;}
   #chip-rail::-webkit-scrollbar{display:none;}
 
@@ -1020,11 +1048,9 @@ style.textContent = `
   #act-row{display:flex;align-items:center;justify-content:center;gap:14px;}
   .a-btn{border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.12s,opacity 0.12s;}
   .a-btn:active{transform:scale(0.82);opacity:0.7;}
-
   #a-rot-l,#a-rot-r{width:48px;height:48px;border-radius:50%;background:var(--glass-light);border:1.5px solid rgba(201,169,110,0.35);transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;}
   #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(201,169,110,0.18);border-color:rgba(201,169,110,0.7);}
   #a-rot-l.dim,#a-rot-r.dim{opacity:0.25;pointer-events:none;}
-
   #a-undo{width:52px;height:52px;border-radius:50%;background:var(--glass-light);border:1px solid rgba(255,255,255,0.1);}
   #a-place{width:70px;height:70px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 8px rgba(201,169,110,0.15),0 8px 28px var(--gold-glow);}
   #a-place.s-move{background:#E8B84B;box-shadow:0 0 0 8px rgba(232,184,75,0.15),0 8px 28px rgba(232,184,75,0.4);}
@@ -1035,7 +1061,6 @@ style.textContent = `
 
   #rot-label{position:fixed;bottom:200px;right:20px;font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--sand);background:var(--glass-mid);backdrop-filter:var(--blur);padding:5px 14px;border-radius:50px;border:1px solid rgba(201,169,110,0.25);z-index:500;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
   #rot-label.on{opacity:1;}
-
   @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 `;
 document.head.appendChild(style);
@@ -1061,12 +1086,10 @@ document.body.appendChild(uiTop);
 const hintPill = document.createElement("div");
 hintPill.id = "hint-pill";
 document.body.appendChild(hintPill);
-
 const moveBanner = document.createElement("div");
 moveBanner.id = "move-banner";
 moveBanner.textContent = "Move phone · tap ✓ to lock position";
 document.body.appendChild(moveBanner);
-
 const rotLabel = document.createElement("div");
 rotLabel.id = "rot-label";
 document.body.appendChild(rotLabel);
@@ -1074,33 +1097,105 @@ document.body.appendChild(rotLabel);
 // ── Screenshot button ─────────────────────────────────────────
 const btnScreenshot = document.createElement("button");
 btnScreenshot.id = "btn-screenshot";
-btnScreenshot.title = "Take screenshot";
+btnScreenshot.title = "Save screenshot";
 btnScreenshot.innerHTML = `
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
        stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8
-             a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
     <circle cx="12" cy="13" r="4"/>
   </svg>`;
 document.body.appendChild(btnScreenshot);
 
-// ── Shutter flash overlay ─────────────────────────────────────
+// ── Shutter flash ─────────────────────────────────────────────
 const shutterFlash = document.createElement("div");
 shutterFlash.id = "shutter-flash";
 document.body.appendChild(shutterFlash);
 
-// ── Toast notification ────────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────────────
 const shotToast = document.createElement("div");
 shotToast.id = "shot-toast";
 document.body.appendChild(shotToast);
-
 let toastTimer = null;
-function showToast(msg) {
+function showToast(msg, type = "ok") {
   shotToast.textContent = msg;
-  shotToast.classList.add("on");
+  shotToast.className = type;
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => shotToast.classList.remove("on"), 2500);
+  toastTimer = setTimeout(() => {
+    shotToast.className = "";
+  }, 3000);
 }
+
+// ── iOS save overlay ──────────────────────────────────────────
+// On iOS, <a download> is ignored and Web Share opens social apps.
+// Instead we show a full-screen image preview with a long-press hint,
+// plus an "Open image" button that opens the dataURL in a new tab
+// where the user can long-press → Save to Photos.
+const iosSaveOverlay = document.createElement("div");
+iosSaveOverlay.id = "ios-save-overlay";
+iosSaveOverlay.innerHTML = `
+  <div id="ios-save-box">
+    <img id="ios-save-img" src="" alt="Screenshot preview" />
+    <div id="ios-save-hint">Long-press the image above → "Save to Photos"</div>
+    <div id="ios-save-actions">
+      <button class="ios-action-btn" id="ios-open-btn">Open image in new tab → Save to Photos</button>
+      <button class="ios-action-btn cancel" id="ios-cancel-btn">Cancel</button>
+    </div>
+  </div>`;
+document.body.appendChild(iosSaveOverlay);
+
+document.getElementById("ios-cancel-btn").addEventListener("click", () => {
+  iosSaveOverlay.classList.remove("on");
+});
+
+// ── Detect platform ───────────────────────────────────────────
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isAndroid = /Android/.test(navigator.userAgent);
+
+// ── Core screenshot function ──────────────────────────────────
+async function takeScreenshot() {
+  // Render a fresh frame so the buffer has latest pixels
+  renderer.render(scene, camera);
+
+  const canvas = renderer.domElement;
+  const dataUrl = canvas.toDataURL("image/png");
+
+  // Shutter flash
+  shutterFlash.classList.add("fire");
+  setTimeout(() => shutterFlash.classList.remove("fire"), 200);
+
+  if (isIOS) {
+    // ── iOS: show preview overlay with long-press + open-in-tab option ──
+    const imgEl = document.getElementById("ios-save-img");
+    imgEl.src = dataUrl;
+    iosSaveOverlay.classList.add("on");
+
+    document.getElementById("ios-open-btn").onclick = () => {
+      window.open(dataUrl, "_blank");
+      iosSaveOverlay.classList.remove("on");
+      showToast("Long-press the image → Save to Photos", "ok");
+    };
+    return;
+  }
+
+  // ── Android / desktop: direct download ───────────────────────
+  // On Android Chrome this lands in Downloads which is visible
+  // in the Gallery app under the "Downloads" album.
+  try {
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = `casadeco_ar_${Date.now()}.png`;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("📸 Saved to Downloads / Gallery!", "ok");
+  } catch (e) {
+    showToast("Could not save image", "err");
+    console.error("Screenshot error:", e);
+  }
+}
+
+btnScreenshot.addEventListener("click", takeScreenshot);
 
 // ─── Bottom bar ───────────────────────────────────────────────
 const uiBottom = document.createElement("div");
@@ -1157,7 +1252,6 @@ uiBottom.innerHTML = `
   </div>`;
 document.body.appendChild(uiBottom);
 
-// ─── Panel toggle ─────────────────────────────────────────────
 let panelCollapsed = false;
 document.getElementById("panel-toggle").addEventListener("click", () => {
   panelCollapsed = !panelCollapsed;
@@ -1179,64 +1273,6 @@ const icoMove = document.getElementById("ico-move");
 const sr1 = document.getElementById("sr1");
 const sr2 = document.getElementById("sr2");
 
-// ─── Screenshot logic ─────────────────────────────────────────
-// Strategy:
-//  1. Render one extra frame so the canvas is up-to-date.
-//  2. Read the WebGL canvas as a PNG data URL.
-//  3. Trigger a shutter flash animation for UX feedback.
-//  4. Try the modern Web Share API first (shows native share sheet
-//     including "Save to Photos" on iOS/Android).
-//  5. Fall back to a hidden <a download> click which works on Android
-//     Chrome and desktop browsers.
-async function takeScreenshot() {
-  // Render a fresh frame so preserveDrawingBuffer has the latest pixels
-  renderer.render(scene, camera);
-
-  // Read pixels from the WebGL canvas
-  const canvas = renderer.domElement;
-  const dataUrl = canvas.toDataURL("image/png");
-
-  // Shutter flash
-  shutterFlash.classList.add("fire");
-  setTimeout(() => shutterFlash.classList.remove("fire"), 150);
-
-  // Convert dataURL → Blob for Web Share API
-  const res = await fetch(dataUrl);
-  const blob = await res.blob();
-  const file = new File([blob], `casadeco_ar_${Date.now()}.png`, {
-    type: "image/png",
-  });
-
-  // Try Web Share API (native share sheet: works on Android Chrome & iOS Safari)
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: "CasaDeco AR",
-        text: "My AR furniture preview — CasaDeco",
-      });
-      showToast("📸 Shared successfully!");
-      return;
-    } catch (err) {
-      // User cancelled share — don't fall through to download
-      if (err.name === "AbortError") return;
-    }
-  }
-
-  // Fallback: trigger a download (Android Chrome saves to Downloads/Gallery)
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `casadeco_ar_${Date.now()}.png`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
-  showToast("📸 Saved to downloads!");
-}
-
-btnScreenshot.addEventListener("click", takeScreenshot);
-
 // ─── Reticle ─────────────────────────────────────────────────
 const reticle = new THREE.Mesh(
   new THREE.RingGeometry(0.1, 0.14, 32).rotateX(-Math.PI / 2),
@@ -1253,7 +1289,6 @@ scene.add(reticle);
 
 // ─── Products ────────────────────────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
-
 function getCategoryEmoji(category) {
   if (!category) return "🛋️";
   const map = {
@@ -1333,31 +1368,30 @@ let gltfScene = null,
 
 const userRotations = new WeakMap();
 const frozenRotations = new WeakMap();
-
-const ROT_STEP = Math.PI / 12;
-const ROT_SPEED = Math.PI / 60;
+const ROT_STEP = Math.PI / 12,
+  ROT_SPEED = Math.PI / 60;
 let rotInterval = null;
 
-// ─── Positioning ─────────────────────────────────────────────
 function faceCameraY(objPos, camPos) {
   return Math.atan2(camPos.x - objPos.x, camPos.z - objPos.z);
 }
 function positionObject(obj, camPos) {
   obj.position.set(floorPos.x, floorPos.y + modelLift, floorPos.z);
-  const baseAngle = faceCameraY(obj.position, camPos);
-  const userDelta = userRotations.get(obj) ?? 0;
-  obj.rotation.set(0, baseAngle + userDelta, 0);
+  obj.rotation.set(
+    0,
+    faceCameraY(obj.position, camPos) + (userRotations.get(obj) ?? 0),
+    0,
+  );
 }
 
-// ─── Rotation UI ─────────────────────────────────────────────
 function activeRotTarget() {
   if (appMode === "previewing" && previewObj) return previewObj;
   if (appMode === "selected" && selectedObj) return selectedObj;
   return null;
 }
 function updateRotUI() {
-  const target = activeRotTarget();
-  if (!target) {
+  const t = activeRotTarget();
+  if (!t) {
     aRotL.classList.add("dim");
     aRotR.classList.add("dim");
     rotLabel.classList.remove("on");
@@ -1365,16 +1399,13 @@ function updateRotUI() {
   }
   aRotL.classList.remove("dim");
   aRotR.classList.remove("dim");
-  const deg = Math.round(
-    (((userRotations.get(target) ?? 0) * 180) / Math.PI + 3600) % 360,
-  );
-  rotLabel.textContent = `${deg}°`;
+  rotLabel.textContent = `${Math.round((((userRotations.get(t) ?? 0) * 180) / Math.PI + 3600) % 360)}°`;
   rotLabel.classList.add("on");
 }
 function rotate(delta) {
-  const target = activeRotTarget();
-  if (!target) return;
-  userRotations.set(target, (userRotations.get(target) ?? 0) + delta);
+  const t = activeRotTarget();
+  if (!t) return;
+  userRotations.set(t, (userRotations.get(t) ?? 0) + delta);
   updateRotUI();
 }
 function startSpin(dir, btn) {
@@ -1412,7 +1443,6 @@ function wireRotBtn(btn, dir) {
 wireRotBtn(aRotL, -1);
 wireRotBtn(aRotR, +1);
 
-// ─── General UI ───────────────────────────────────────────────
 function setPlaceIcon(s) {
   icoAim.style.display = s === "aim" ? "" : "none";
   icoCheck.style.display = s === "check" ? "" : "none";
@@ -1430,7 +1460,6 @@ function setScan(on) {
   sr2.classList.toggle("on", on);
 }
 
-// ─── Chip rail ────────────────────────────────────────────────
 function buildRail() {
   chipRail.innerHTML = "";
   products.forEach((p) => {
@@ -1471,7 +1500,6 @@ function buildRail() {
   });
 }
 
-// ─── Load model ───────────────────────────────────────────────
 function loadModel(url) {
   if (previewObj) {
     scene.remove(previewObj);
@@ -1482,7 +1510,6 @@ function loadModel(url) {
   topStatus.textContent = "Loading…";
   setHint(null);
   updateRotUI();
-
   new GLTFLoader().load(
     url,
     (gltf) => {
@@ -1493,10 +1520,10 @@ function loadModel(url) {
       scene.remove(probe);
       const size = new THREE.Vector3();
       box.getSize(size);
-      const nativeHeight = size.y;
-      if (nativeHeight < 0.01) modelScale = 1.0 / nativeHeight;
-      else if (nativeHeight > 10) modelScale = 0.01;
-      else modelScale = 1.0;
+      const h = size.y;
+      if (h < 0.01) modelScale = 1 / h;
+      else if (h > 10) modelScale = 0.01;
+      else modelScale = 1;
       modelLift = -box.min.y * modelScale;
       gltfScene = gltf.scene;
       startPreview();
@@ -1537,7 +1564,7 @@ function doConfirm() {
     moveBanner.style.display = "none";
     setPlaceIcon("check");
     topStatus.textContent = "Placed!";
-    setHint("Tap ↺ to undo · hold ⟳ to rotate · tap 📷 to capture");
+    setHint("Tap 📷 to save a photo of your room");
     updateRotUI();
     setTimeout(() => {
       setPlaceIcon("aim");
@@ -1560,14 +1587,13 @@ function doConfirm() {
   }
 }
 
-// ─── XR session ───────────────────────────────────────────────
 renderer.xr.addEventListener("sessionstart", () => {
   const arBtnEl = document.getElementById("ARButton");
   if (arBtnEl) arBtnEl.remove();
   startScreen.style.display = "none";
   uiTop.classList.add("on");
   uiBottom.classList.add("on");
-  btnScreenshot.classList.add("on"); // show camera button
+  btnScreenshot.classList.add("on");
   panelCollapsed = false;
   uiBottom.classList.remove("collapsed");
   buildRail();
@@ -1586,26 +1612,26 @@ renderer.xr.addEventListener("sessionstart", () => {
       return;
     }
     if (appMode === "idle" && placedList.length > 0) {
-      const xrCamera = renderer.xr.getCamera();
-      raycaster.setFromCamera({ x: 0, y: 0 }, xrCamera);
+      const xrCam = renderer.xr.getCamera();
+      raycaster.setFromCamera({ x: 0, y: 0 }, xrCam);
       const targets = [];
       placedList.forEach((obj) =>
-        obj.traverse((child) => {
-          if (child.isMesh) targets.push(child);
+        obj.traverse((c) => {
+          if (c.isMesh) targets.push(c);
         }),
       );
       const hits = raycaster.intersectObjects(targets, false);
       if (hits.length > 0) {
-        const hitMesh = hits[0].object;
-        const hitObj = placedList.find((obj) => {
+        const hm = hits[0].object;
+        const ho = placedList.find((obj) => {
           let f = false;
           obj.traverse((c) => {
-            if (c === hitMesh) f = true;
+            if (c === hm) f = true;
           });
           return f;
         });
-        if (hitObj) {
-          selectedObj = hitObj;
+        if (ho) {
+          selectedObj = ho;
           appMode = "selected";
           moveBanner.style.display = "block";
           setPlaceIcon("move");
@@ -1685,7 +1711,7 @@ renderer.xr.addEventListener("sessionstart", () => {
     stopSpin();
     uiTop.classList.remove("on");
     uiBottom.classList.remove("on");
-    btnScreenshot.classList.remove("on"); // hide camera button
+    btnScreenshot.classList.remove("on");
     panelCollapsed = false;
     setScan(false);
     moveBanner.style.display = "none";
@@ -1698,7 +1724,6 @@ renderer.xr.addEventListener("sessionstart", () => {
   });
 });
 
-// Flutter bridge
 window.setModel = (url) => {
   const p = products.find((x) => x.url === url);
   if (p) {
@@ -1710,21 +1735,18 @@ window.setModel = (url) => {
 window.removeLastObject = () => aUndo.click();
 window.clearAll = () => aDel.click();
 
-// ─── Render loop ─────────────────────────────────────────────
 renderer.setAnimationLoop((_, frame) => {
   if (frame) {
     const refSpace = renderer.xr.getReferenceSpace();
     const session = renderer.xr.getSession();
-
     if (!hitTestSourceRequested) {
-      session.requestReferenceSpace("viewer").then((vs) => {
+      session.requestReferenceSpace("viewer").then((vs) =>
         session.requestHitTestSource({ space: vs }).then((src) => {
           hitTestSource = src;
-        });
-      });
+        }),
+      );
       hitTestSourceRequested = true;
     }
-
     if (hitTestSource) {
       const hits = frame.getHitTestResults(hitTestSource);
       if (hits.length > 0) {
@@ -1733,10 +1755,8 @@ renderer.setAnimationLoop((_, frame) => {
         reticle.matrix.fromArray(m);
         floorPos.set(m[12], m[13], m[14]);
         floorFound = true;
-
         const camPos = new THREE.Vector3();
         renderer.xr.getCamera().getWorldPosition(camPos);
-
         if (appMode === "previewing" && previewObj) {
           previewObj.visible = true;
           positionObject(previewObj, camPos);
@@ -1754,7 +1774,6 @@ renderer.setAnimationLoop((_, frame) => {
           topStatus.textContent = "Scanning surface…";
         }
       }
-
       placedList.forEach((obj) => {
         if (obj !== selectedObj) {
           obj.rotation.y = frozenRotations.get(obj) ?? 0;
@@ -1762,7 +1781,6 @@ renderer.setAnimationLoop((_, frame) => {
       });
     }
   }
-
   renderer.render(scene, camera);
 });
 
