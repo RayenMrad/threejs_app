@@ -1823,10 +1823,32 @@ renderer.setAnimationLoop((_, frame) => {
   // ── After render: WebGL buffer has fresh 3D pixels → composite ──
   if (pendingScreenshot) {
     pendingScreenshot = false;
-    const xrEnabled = renderer.xr.enabled;
-    renderer.xr.enabled = false;
-    renderer.render(scene, camera); // ← writes to main canvas
-    renderer.xr.enabled = xrEnabled;
+    try {
+      // 1. Grab the XR camera WHILE xr is still enabled (pose is valid now)
+      const xrCam = renderer.xr.getCamera();
+      const eye = xrCam.cameras[0]; // actual eye camera with correct matrices
+
+      // 2. Copy its full transform to the regular camera
+      camera.matrixAutoUpdate = false;
+      camera.matrix.copy(eye.matrix);
+      camera.matrixWorld.copy(eye.matrixWorld);
+      camera.matrixWorldInverse.copy(eye.matrixWorldInverse);
+      camera.projectionMatrix.copy(eye.projectionMatrix);
+      camera.projectionMatrixInverse.copy(eye.projectionMatrixInverse);
+
+      // 3. Re-render to the MAIN canvas (not the XR framebuffer)
+      renderer.xr.enabled = false;
+      renderer.setRenderTarget(null);
+      renderer.clear();
+      renderer.render(scene, camera);
+      renderer.xr.enabled = true;
+
+      // 4. Restore camera to normal
+      camera.matrixAutoUpdate = true;
+    } catch (e) {
+      console.error("Screenshot render failed:", e);
+    }
+
     doSave();
   }
 });
