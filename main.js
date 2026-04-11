@@ -1847,6 +1847,10 @@ renderer.setAnimationLoop((_, frame) => {
       camera.matrixAutoUpdate = true;
     } catch (e) {
       console.error("Screenshot render failed:", e);
+    } finally {
+      // ✅ ALWAYS restore these, even if an error occurred
+      renderer.xr.enabled = true;
+      camera.matrixAutoUpdate = true;
     }
 
     doSave();
