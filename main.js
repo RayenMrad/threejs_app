@@ -1094,25 +1094,20 @@ document
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
 // ─────────────────────────────────────────────────────────────
-// SCREENSHOT — Why compositing is required
+// SCREENSHOT
 //
-// WebXR camera passthrough is rendered by the OS compositor and
-// NEVER written into the WebGL canvas. So toDataURL() always gives
-// you a black or transparent image even with preserveDrawingBuffer.
-//
-// Fix: acquire the rear camera via getUserMedia BEFORE entering XR
-// (Android Chrome lets both share the camera if getUserMedia starts
-// first). At screenshot time we draw:
-//   [video frame]  ← real room background
-//   [WebGL canvas] ← 3D furniture overlay  (preserveDrawingBuffer)
-// and export the composite 2D canvas as JPEG.
+// Strategy: render scene to an offscreen WebGLRenderTarget using
+// a snapshot camera cloned from the XR eye camera. Never touch
+// renderer.xr.enabled — that corrupts the XR session.
+// Read pixels from the render target, flip Y (WebGL is bottom-up),
+// composite over the getUserMedia video feed, export as JPEG.
 // ─────────────────────────────────────────────────────────────
 
-let bgVideo = null; // hidden <video> fed by getUserMedia
-let bgStream = null; // MediaStream for the rear camera
+let bgVideo = null;
+let bgStream = null;
 
 async function acquireBgCamera() {
-  if (bgStream) return; // already running
+  if (bgStream) return;
   try {
     bgStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: "environment" } },
@@ -1123,7 +1118,6 @@ async function acquireBgCamera() {
     bgVideo.autoplay = true;
     bgVideo.playsInline = true;
     bgVideo.muted = true;
-    // Keep it invisible — we only need its pixel data
     bgVideo.style.cssText =
       "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;";
     document.body.appendChild(bgVideo);
@@ -1147,41 +1141,7 @@ function releaseBgCamera() {
   }
 }
 
-// Build composite: video (background) + WebGL (furniture overlay)
-function buildCompositeDataUrl() {
-  const glCanvas = renderer.domElement;
-  const w = glCanvas.width;
-  const h = glCanvas.height;
-
-  const out = document.createElement("canvas");
-  out.width = w;
-  out.height = h;
-  const ctx = out.getContext("2d");
-
-  // ── Layer 1: real camera feed ────────────────────────────────
-  if (bgVideo && bgVideo.readyState >= 2 && bgVideo.videoWidth > 0) {
-    const vw = bgVideo.videoWidth;
-    const vh = bgVideo.videoHeight;
-    // cover-fit so the room fills the canvas
-    const scale = Math.max(w / vw, h / vh);
-    const dw = vw * scale;
-    const dh = vh * scale;
-    ctx.drawImage(bgVideo, (w - dw) / 2, (h - dh) / 2, dw, dh);
-  } else {
-    // Camera not available — dark fallback so furniture is visible
-    ctx.fillStyle = "#111";
-    ctx.fillRect(0, 0, w, h);
-  }
-
-  // ── Layer 2: WebGL scene (transparent bg + 3D furniture) ─────
-  ctx.globalAlpha = 1.0;
-  ctx.drawImage(glCanvas, 0, 0, w, h); // explicit w/h avoids scaling bugs
-
-  return out.toDataURL("image/jpeg", 0.92);
-}
-
-// Flag: set on button tap, consumed inside the animation loop
-// AFTER the XR frame has been rendered so the WebGL buffer is fresh
+// Flag consumed inside animation loop after XR frame is rendered
 let pendingScreenshot = false;
 
 function takeScreenshot() {
@@ -1190,42 +1150,12 @@ function takeScreenshot() {
   setTimeout(() => shutterFlash.classList.remove("fire"), 200);
 }
 
-function doSave() {
-  const dataUrl = buildCompositeDataUrl();
-
-  if (isIOS) {
-    const imgEl = document.getElementById("ios-save-img");
-    imgEl.src = dataUrl;
-    iosSaveOverlay.classList.add("on");
-    document.getElementById("ios-open-btn").onclick = () => {
-      window.open(dataUrl, "_blank");
-      iosSaveOverlay.classList.remove("on");
-      showToast("Long-press the image → Save to Photos", "ok");
-    };
-    return;
-  }
-
-  try {
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    link.download = `casadeco_ar_${Date.now()}.jpg`;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast("📸 Saved to Downloads / Gallery!", "ok");
-  } catch (e) {
-    showToast("Could not save image", "err");
-    console.error("Screenshot error:", e);
-  }
-}
-
 btnScreenshot.addEventListener("click", takeScreenshot);
 
-// ── Start AR button: acquire camera FIRST, then enter XR ─────
+// ── Start AR button ───────────────────────────────────────────
 document.getElementById("btn-start-ar").addEventListener("click", async () => {
-  await acquireBgCamera(); // grab rear camera before XR locks it
-  arBtn.click(); // launch WebXR session
+  await acquireBgCamera();
+  arBtn.click();
 });
 
 // ─── Bottom bar ───────────────────────────────────────────────
@@ -1752,7 +1682,7 @@ renderer.xr.addEventListener("sessionstart", () => {
     hitTestSource = null;
     hitTestSourceRequested = false;
     floorFound = false;
-    releaseBgCamera(); // stop camera stream when AR ends
+    releaseBgCamera();
   });
 });
 
@@ -1817,43 +1747,109 @@ renderer.setAnimationLoop((_, frame) => {
     }
   }
 
-  // ── Render (XR compositor draws camera passthrough separately) ──
+  // ── Primary XR render ────────────────────────────────────────
   renderer.render(scene, camera);
 
-  // ── After render: WebGL buffer has fresh 3D pixels → composite ──
+  // ── Screenshot: render to offscreen target, never touch xr.enabled ──
   if (pendingScreenshot) {
     pendingScreenshot = false;
+
     try {
-      // 1. Grab the XR camera WHILE xr is still enabled (pose is valid now)
       const xrCam = renderer.xr.getCamera();
-      const eye = xrCam.cameras[0]; // actual eye camera with correct matrices
+      const eye = xrCam.cameras[0];
 
-      // 2. Copy its full transform to the regular camera
-      camera.matrixAutoUpdate = false;
-      camera.matrix.copy(eye.matrix);
-      camera.matrixWorld.copy(eye.matrixWorld);
-      camera.matrixWorldInverse.copy(eye.matrixWorldInverse);
-      camera.projectionMatrix.copy(eye.projectionMatrix);
-      camera.projectionMatrixInverse.copy(eye.projectionMatrixInverse);
+      const w = renderer.domElement.width;
+      const h = renderer.domElement.height;
 
-      // 3. Re-render to the MAIN canvas (not the XR framebuffer)
-      renderer.xr.enabled = false;
-      renderer.setRenderTarget(null);
+      // 1. Offscreen render target
+      const rt = new THREE.WebGLRenderTarget(w, h, {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        format: THREE.RGBAFormat,
+      });
+
+      // 2. Snapshot camera — cloned from XR eye, never modifies main camera
+      const snapCam = new THREE.PerspectiveCamera();
+      snapCam.matrixAutoUpdate = false;
+      snapCam.matrix.copy(eye.matrix);
+      snapCam.matrixWorld.copy(eye.matrixWorld);
+      snapCam.matrixWorldInverse.copy(eye.matrixWorldInverse);
+      snapCam.projectionMatrix.copy(eye.projectionMatrix);
+      snapCam.projectionMatrixInverse.copy(eye.projectionMatrixInverse);
+
+      // 3. Render scene into offscreen target (XR session completely untouched)
+      renderer.setRenderTarget(rt);
       renderer.clear();
-      renderer.render(scene, camera);
-      renderer.xr.enabled = true;
+      renderer.render(scene, snapCam);
+      renderer.setRenderTarget(null); // restore to XR framebuffer immediately
 
-      // 4. Restore camera to normal
-      camera.matrixAutoUpdate = true;
+      // 4. Read raw pixels (bottom-up, RGBA)
+      const pixels = new Uint8Array(w * h * 4);
+      renderer.readRenderTargetPixels(rt, 0, 0, w, h, pixels);
+      rt.dispose();
+
+      // 5. Flip Y: WebGL origin = bottom-left, Canvas origin = top-left
+      const flippedPixels = new Uint8ClampedArray(w * h * 4);
+      for (let row = 0; row < h; row++) {
+        const src = (h - 1 - row) * w * 4;
+        const dst = row * w * 4;
+        flippedPixels.set(pixels.subarray(src, src + w * 4), dst);
+      }
+
+      // 6. Composite: video background + flipped 3D render
+      const final = document.createElement("canvas");
+      final.width = w;
+      final.height = h;
+      const fCtx = final.getContext("2d");
+
+      // Layer 1: real camera feed
+      if (bgVideo && bgVideo.readyState >= 2 && bgVideo.videoWidth > 0) {
+        const vw = bgVideo.videoWidth;
+        const vh = bgVideo.videoHeight;
+        const scale = Math.max(w / vw, h / vh);
+        const dw = vw * scale;
+        const dh = vh * scale;
+        fCtx.drawImage(bgVideo, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      } else {
+        fCtx.fillStyle = "#111";
+        fCtx.fillRect(0, 0, w, h);
+      }
+
+      // Layer 2: 3D furniture (Y-flipped, correct orientation)
+      const furnitureCanvas = document.createElement("canvas");
+      furnitureCanvas.width = w;
+      furnitureCanvas.height = h;
+      furnitureCanvas
+        .getContext("2d")
+        .putImageData(new ImageData(flippedPixels, w, h), 0, 0);
+      fCtx.drawImage(furnitureCanvas, 0, 0);
+
+      // 7. Export and save
+      const dataUrl = final.toDataURL("image/jpeg", 0.92);
+
+      if (isIOS) {
+        const imgEl = document.getElementById("ios-save-img");
+        imgEl.src = dataUrl;
+        iosSaveOverlay.classList.add("on");
+        document.getElementById("ios-open-btn").onclick = () => {
+          window.open(dataUrl, "_blank");
+          iosSaveOverlay.classList.remove("on");
+          showToast("Long-press the image → Save to Photos", "ok");
+        };
+      } else {
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = `casadeco_ar_${Date.now()}.jpg`;
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("📸 Saved to Downloads / Gallery!", "ok");
+      }
     } catch (e) {
-      console.error("Screenshot render failed:", e);
-    } finally {
-      // ✅ ALWAYS restore these, even if an error occurred
-      renderer.xr.enabled = true;
-      camera.matrixAutoUpdate = true;
+      console.error("Screenshot failed:", e);
+      showToast("Could not save image", "err");
     }
-
-    doSave();
   }
 });
 
