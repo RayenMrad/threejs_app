@@ -904,9 +904,6 @@ startScreen.innerHTML = `
   <p>Visualise furniture in your space</p>
   <button id="btn-start-ar">Start AR Experience</button>`;
 document.body.appendChild(startScreen);
-document
-  .getElementById("btn-start-ar")
-  .addEventListener("click", () => arBtn.click());
 
 const fontLink = document.createElement("link");
 fontLink.rel = "stylesheet";
@@ -944,66 +941,26 @@ style.textContent = `
   #btn-stop{padding:8px 18px;background:rgba(217,95,95,0.18);border:1px solid rgba(217,95,95,0.35);border-radius:50px;color:#E07070;font-family:var(--f-body);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.15s;backdrop-filter:var(--blur);}
   #btn-stop:active{background:rgba(217,95,95,0.32);}
 
-  #btn-screenshot {
-    position: fixed; top: 78px; right: 16px;
-    width: 46px; height: 46px; border-radius: 50%;
-    background: var(--glass-dark); backdrop-filter: var(--blur);
-    border: 1.5px solid rgba(201,169,110,0.5);
-    display: none; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 500;
-    transition: background 0.15s, transform 0.12s, border-color 0.15s;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  }
-  #btn-screenshot.on { display: flex; }
-  #btn-screenshot:active { transform: scale(0.82); background: rgba(201,169,110,0.18); }
+  #btn-screenshot{position:fixed;top:78px;right:16px;width:46px;height:46px;border-radius:50%;background:var(--glass-dark);backdrop-filter:var(--blur);border:1.5px solid rgba(201,169,110,0.5);display:none;align-items:center;justify-content:center;cursor:pointer;z-index:500;transition:background 0.15s,transform 0.12s;box-shadow:0 4px 16px rgba(0,0,0,0.4);}
+  #btn-screenshot.on{display:flex;}
+  #btn-screenshot:active{transform:scale(0.82);background:rgba(201,169,110,0.18);}
 
-  #shutter-flash {
-    position: fixed; inset: 0; background: #fff;
-    opacity: 0; pointer-events: none; z-index: 9000;
-    transition: opacity 0.06s ease-out;
-  }
-  #shutter-flash.fire { opacity: 1; }
+  #shutter-flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9000;transition:opacity 0.06s ease-out;}
+  #shutter-flash.fire{opacity:1;}
 
-  #shot-toast {
-    position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
-    font-family: var(--f-body); font-size: 13px; font-weight: 600;
-    padding: 10px 22px; border-radius: 50px;
-    z-index: 9001; pointer-events: none;
-    opacity: 0; white-space: nowrap;
-    transition: opacity 0.3s;
-  }
-  #shot-toast.ok  { color: var(--ink); background: var(--gold); box-shadow: 0 4px 20px var(--gold-glow); opacity: 1; }
-  #shot-toast.err { color: #fff; background: var(--red); opacity: 1; }
+  #shot-toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:13px;font-weight:600;padding:10px 22px;border-radius:50px;z-index:9001;pointer-events:none;opacity:0;white-space:nowrap;transition:opacity 0.3s;}
+  #shot-toast.ok{color:var(--ink);background:var(--gold);box-shadow:0 4px 20px var(--gold-glow);opacity:1;}
+  #shot-toast.err{color:#fff;background:var(--red);opacity:1;}
 
-  #ios-save-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.82);
-    display: none; flex-direction: column; align-items: center; justify-content: flex-end;
-    padding-bottom: 40px; z-index: 9500;
-  }
-  #ios-save-overlay.on { display: flex; }
-  #ios-save-box {
-    width: 88%; background: #1c1c1e; border-radius: 20px;
-    padding: 0; overflow: hidden;
-  }
-  #ios-save-img {
-    width: 100%; max-height: 260px; object-fit: contain;
-    background: #000; display: block; border-radius: 0;
-  }
-  #ios-save-actions {
-    display: flex; flex-direction: column; gap: 0;
-  }
-  .ios-action-btn {
-    width: 100%; padding: 16px; border: none; background: none;
-    font-family: var(--f-body); font-size: 15px; font-weight: 500;
-    color: var(--gold); cursor: pointer; border-top: 1px solid rgba(255,255,255,0.08);
-    transition: background 0.15s;
-  }
-  .ios-action-btn:active { background: rgba(255,255,255,0.06); }
-  .ios-action-btn.cancel { color: var(--red); font-weight: 600; }
-  #ios-save-hint {
-    font-family: var(--f-body); font-size: 11px; color: var(--muted);
-    padding: 10px 16px 4px; text-align: center;
-  }
+  #ios-save-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);display:none;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:40px;z-index:9500;}
+  #ios-save-overlay.on{display:flex;}
+  #ios-save-box{width:88%;background:#1c1c1e;border-radius:20px;padding:0;overflow:hidden;}
+  #ios-save-img{width:100%;max-height:260px;object-fit:contain;background:#000;display:block;}
+  #ios-save-actions{display:flex;flex-direction:column;gap:0;}
+  .ios-action-btn{width:100%;padding:16px;border:none;background:none;font-family:var(--f-body);font-size:15px;font-weight:500;color:var(--gold);cursor:pointer;border-top:1px solid rgba(255,255,255,0.08);transition:background 0.15s;}
+  .ios-action-btn:active{background:rgba(255,255,255,0.06);}
+  .ios-action-btn.cancel{color:var(--red);font-weight:600;}
+  #ios-save-hint{font-family:var(--f-body);font-size:11px;color:var(--muted);padding:10px 16px 4px;text-align:center;}
 
   .s-ring{position:fixed;top:50%;left:50%;border:1.5px solid var(--gold);border-radius:50%;pointer-events:none;z-index:300;opacity:0;transition:opacity 0.4s;transform:translate(-50%,-56%);}
   .s-ring.on{animation:sPulse 2s ease-in-out infinite;}
@@ -1057,7 +1014,6 @@ style.textContent = `
 
   #rot-label{position:fixed;bottom:200px;right:20px;font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--sand);background:var(--glass-mid);backdrop-filter:var(--blur);padding:5px 14px;border-radius:50px;border:1px solid rgba(201,169,110,0.25);z-index:500;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
   #rot-label.on{opacity:1;}
-  @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 `;
 document.head.appendChild(style);
 
@@ -1102,12 +1058,10 @@ btnScreenshot.innerHTML = `
   </svg>`;
 document.body.appendChild(btnScreenshot);
 
-// ── Shutter flash ─────────────────────────────────────────────
 const shutterFlash = document.createElement("div");
 shutterFlash.id = "shutter-flash";
 document.body.appendChild(shutterFlash);
 
-// ── Toast ─────────────────────────────────────────────────────
 const shotToast = document.createElement("div");
 shotToast.id = "shot-toast";
 document.body.appendChild(shotToast);
@@ -1121,7 +1075,6 @@ function showToast(msg, type = "ok") {
   }, 3000);
 }
 
-// ── iOS save overlay ──────────────────────────────────────────
 const iosSaveOverlay = document.createElement("div");
 iosSaveOverlay.id = "ios-save-overlay";
 iosSaveOverlay.innerHTML = `
@@ -1134,29 +1087,110 @@ iosSaveOverlay.innerHTML = `
     </div>
   </div>`;
 document.body.appendChild(iosSaveOverlay);
+document
+  .getElementById("ios-cancel-btn")
+  .addEventListener("click", () => iosSaveOverlay.classList.remove("on"));
 
-document.getElementById("ios-cancel-btn").addEventListener("click", () => {
-  iosSaveOverlay.classList.remove("on");
-});
-
-// ── Detect platform ───────────────────────────────────────────
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-// ── Screenshot flag (captured inside animation loop after XR render) ──
+// ─────────────────────────────────────────────────────────────
+// SCREENSHOT — Why compositing is required
+//
+// WebXR camera passthrough is rendered by the OS compositor and
+// NEVER written into the WebGL canvas. So toDataURL() always gives
+// you a black or transparent image even with preserveDrawingBuffer.
+//
+// Fix: acquire the rear camera via getUserMedia BEFORE entering XR
+// (Android Chrome lets both share the camera if getUserMedia starts
+// first). At screenshot time we draw:
+//   [video frame]  ← real room background
+//   [WebGL canvas] ← 3D furniture overlay  (preserveDrawingBuffer)
+// and export the composite 2D canvas as JPEG.
+// ─────────────────────────────────────────────────────────────
+
+let bgVideo = null; // hidden <video> fed by getUserMedia
+let bgStream = null; // MediaStream for the rear camera
+
+async function acquireBgCamera() {
+  if (bgStream) return; // already running
+  try {
+    bgStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: false,
+    });
+    bgVideo = document.createElement("video");
+    bgVideo.srcObject = bgStream;
+    bgVideo.autoplay = true;
+    bgVideo.playsInline = true;
+    bgVideo.muted = true;
+    // Keep it invisible — we only need its pixel data
+    bgVideo.style.cssText =
+      "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;";
+    document.body.appendChild(bgVideo);
+    await bgVideo.play().catch(() => {});
+    console.log("[screenshot] bg camera ready");
+  } catch (e) {
+    console.warn("[screenshot] bg camera failed:", e);
+    bgVideo = null;
+    bgStream = null;
+  }
+}
+
+function releaseBgCamera() {
+  if (bgStream) {
+    bgStream.getTracks().forEach((t) => t.stop());
+    bgStream = null;
+  }
+  if (bgVideo) {
+    bgVideo.remove();
+    bgVideo = null;
+  }
+}
+
+// Build composite: video (background) + WebGL (furniture overlay)
+function buildCompositeDataUrl() {
+  const glCanvas = renderer.domElement;
+  const w = glCanvas.width;
+  const h = glCanvas.height;
+
+  const out = document.createElement("canvas");
+  out.width = w;
+  out.height = h;
+  const ctx = out.getContext("2d");
+
+  // ── Layer 1: real camera feed ────────────────────────────────
+  if (bgVideo && bgVideo.readyState >= 2 && bgVideo.videoWidth > 0) {
+    const vw = bgVideo.videoWidth;
+    const vh = bgVideo.videoHeight;
+    // cover-fit so the room fills the canvas
+    const scale = Math.max(w / vw, h / vh);
+    const dw = vw * scale;
+    const dh = vh * scale;
+    ctx.drawImage(bgVideo, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  } else {
+    // Camera not available — dark fallback so furniture is visible
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  // ── Layer 2: WebGL scene (transparent bg + 3D furniture) ─────
+  ctx.drawImage(glCanvas, 0, 0);
+
+  return out.toDataURL("image/jpeg", 0.92);
+}
+
+// Flag: set on button tap, consumed inside the animation loop
+// AFTER the XR frame has been rendered so the WebGL buffer is fresh
 let pendingScreenshot = false;
 
 function takeScreenshot() {
-  // Just set the flag — actual capture happens after the XR render in the animation loop
   pendingScreenshot = true;
-
-  // Shutter flash for immediate tactile feedback
   shutterFlash.classList.add("fire");
   setTimeout(() => shutterFlash.classList.remove("fire"), 200);
 }
 
-function captureAndSave() {
-  const canvas = renderer.domElement;
-  const dataUrl = canvas.toDataURL("image/png");
+function doSave() {
+  const dataUrl = buildCompositeDataUrl();
 
   if (isIOS) {
     const imgEl = document.getElementById("ios-save-img");
@@ -1170,11 +1204,10 @@ function captureAndSave() {
     return;
   }
 
-  // Android / desktop: direct download
   try {
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = `casadeco_ar_${Date.now()}.png`;
+    link.download = `casadeco_ar_${Date.now()}.jpg`;
     link.style.display = "none";
     document.body.appendChild(link);
     link.click();
@@ -1187,6 +1220,12 @@ function captureAndSave() {
 }
 
 btnScreenshot.addEventListener("click", takeScreenshot);
+
+// ── Start AR button: acquire camera FIRST, then enter XR ─────
+document.getElementById("btn-start-ar").addEventListener("click", async () => {
+  await acquireBgCamera(); // grab rear camera before XR locks it
+  arBtn.click(); // launch WebXR session
+});
 
 // ─── Bottom bar ───────────────────────────────────────────────
 const uiBottom = document.createElement("div");
@@ -1712,6 +1751,7 @@ renderer.xr.addEventListener("sessionstart", () => {
     hitTestSource = null;
     hitTestSourceRequested = false;
     floorFound = false;
+    releaseBgCamera(); // stop camera stream when AR ends
   });
 });
 
@@ -1731,6 +1771,7 @@ renderer.setAnimationLoop((_, frame) => {
   if (frame) {
     const refSpace = renderer.xr.getReferenceSpace();
     const session = renderer.xr.getSession();
+
     if (!hitTestSourceRequested) {
       session.requestReferenceSpace("viewer").then((vs) =>
         session.requestHitTestSource({ space: vs }).then((src) => {
@@ -1739,6 +1780,7 @@ renderer.setAnimationLoop((_, frame) => {
       );
       hitTestSourceRequested = true;
     }
+
     if (hitTestSource) {
       const hits = frame.getHitTestResults(hitTestSource);
       if (hits.length > 0) {
@@ -1774,13 +1816,13 @@ renderer.setAnimationLoop((_, frame) => {
     }
   }
 
-  // ── Render the scene (XR or normal) ──────────────────────────
+  // ── Render (XR compositor draws camera passthrough separately) ──
   renderer.render(scene, camera);
 
-  // ── Capture screenshot AFTER render so buffer has real pixels ──
+  // ── After render: WebGL buffer has fresh 3D pixels → composite ──
   if (pendingScreenshot) {
     pendingScreenshot = false;
-    captureAndSave();
+    doSave();
   }
 });
 
