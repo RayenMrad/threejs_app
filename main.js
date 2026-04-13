@@ -1449,6 +1449,10 @@ function loadModel(url) {
     scene.remove(previewObj);
     previewObj = null;
   }
+
+  selectedObj = null;
+  setSelectionHighlight(null);
+
   gltfScene = null;
   appMode = "idle";
   topStatus.textContent = "Loading…";
@@ -1550,8 +1554,30 @@ renderer.xr.addEventListener("sessionstart", () => {
 
   const session = renderer.xr.getSession();
   const raycaster = new THREE.Raycaster();
+  let domTapped = false;
+  document.getElementById("ui-bottom").addEventListener(
+    "pointerdown",
+    () => {
+      domTapped = true;
+      setTimeout(() => {
+        domTapped = false;
+      }, 400);
+    },
+    { passive: true },
+  );
+  document.getElementById("ui-top").addEventListener(
+    "pointerdown",
+    () => {
+      domTapped = true;
+      setTimeout(() => {
+        domTapped = false;
+      }, 400);
+    },
+    { passive: true },
+  );
 
   session.addEventListener("select", () => {
+    if (domTapped) return;
     if (appMode === "previewing") {
       doConfirm();
       return;
