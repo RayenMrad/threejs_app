@@ -1193,6 +1193,20 @@ const reticle = new THREE.Mesh(
     opacity: 0.85,
   }),
 );
+
+const selectionBox = new THREE.BoxHelper(new THREE.Object3D(), 0xc9a96e);
+selectionBox.visible = false;
+scene.add(selectionBox);
+
+function setSelectionHighlight(obj) {
+  if (obj) {
+    selectionBox.setFromObject(obj);
+    selectionBox.visible = true;
+  } else {
+    selectionBox.visible = false;
+  }
+}
+
 reticle.matrixAutoUpdate = false;
 reticle.visible = false;
 scene.add(reticle);
@@ -1493,6 +1507,7 @@ function doConfirm() {
     placedList.push(previewObj);
     previewObj = null;
     appMode = "idle";
+    setSelectionHighlight(null);
     moveBanner.style.display = "none";
     setPlaceIcon("check");
     topStatus.textContent = "Placed!";
@@ -1508,6 +1523,7 @@ function doConfirm() {
     frozenRotations.set(selectedObj, selectedObj.rotation.y);
     selectedObj = null;
     appMode = "idle";
+    setSelectionHighlight(null);
     moveBanner.style.display = "none";
     setPlaceIcon("check");
     topStatus.textContent = "Position locked";
@@ -1566,6 +1582,7 @@ renderer.xr.addEventListener("sessionstart", () => {
         if (hitObj) {
           selectedObj = hitObj;
           appMode = "selected";
+          setSelectionHighlight(hitObj);
           moveBanner.style.display = "block";
           setPlaceIcon("move");
           topStatus.textContent = "Moving item";
@@ -1581,6 +1598,7 @@ renderer.xr.addEventListener("sessionstart", () => {
     } else if (appMode === "idle" && placedList.length > 0) {
       selectedObj = placedList[placedList.length - 1];
       appMode = "selected";
+      setSelectionHighlight(selectedObj);
       moveBanner.style.display = "block";
       setPlaceIcon("move");
       topStatus.textContent = "Moving item";
@@ -1636,7 +1654,9 @@ renderer.xr.addEventListener("sessionstart", () => {
   });
 
   aDelOne.addEventListener("click", () => {
+    e.stopPropagation();
     stopSpin();
+    const objToDelete = selectedObj;
     if (appMode === "selected" && selectedObj) {
       const i = placedList.indexOf(selectedObj);
       if (i !== -1) placedList.splice(i, 1);
@@ -1722,6 +1742,7 @@ renderer.setAnimationLoop((_, frame) => {
 
         if (appMode === "selected" && selectedObj) {
           positionObject(selectedObj, camPos);
+          setSelectionHighlight(selectedObj);
         }
       } else {
         reticle.visible = false;
