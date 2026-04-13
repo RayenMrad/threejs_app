@@ -1035,23 +1035,23 @@ style.textContent = `
   .p-info{display:flex;align-items:center;min-width:0;}
   .p-name{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
 
-  #act-row{display:flex;align-items:center;justify-content:center;gap:14px;}
-  .a-btn{border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.12s,opacity 0.12s;}
+  #act-row{display:flex;align-items:center;justify-content:center;gap:8px;}
+  .a-btn{border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.12s,opacity 0.12s;flex-shrink:0;}
   .a-btn:active{transform:scale(0.82);opacity:0.7;}
 
-  #a-rot-l,#a-rot-r{width:48px;height:48px;border-radius:50%;background:var(--glass-light);border:1.5px solid rgba(201,169,110,0.35);transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;}
+  #a-rot-l,#a-rot-r{width:42px;height:42px;border-radius:50%;background:var(--glass-light);border:1.5px solid rgba(201,169,110,0.35);transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;}
   #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(201,169,110,0.18);border-color:rgba(201,169,110,0.7);}
   #a-rot-l.dim,#a-rot-r.dim{opacity:0.25;pointer-events:none;}
 
-  #a-undo{width:52px;height:52px;border-radius:50%;background:var(--glass-light);border:1px solid rgba(255,255,255,0.1);}
-  #a-place{width:70px;height:70px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 8px rgba(201,169,110,0.15),0 8px 28px var(--gold-glow);}
-  #a-place.s-move{background:#E8B84B;box-shadow:0 0 0 8px rgba(232,184,75,0.15),0 8px 28px rgba(232,184,75,0.4);}
-  #a-place.s-ok{background:var(--green);box-shadow:0 0 0 8px rgba(91,173,138,0.18),0 8px 28px rgba(91,173,138,0.38);animation:pop 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  #a-undo{width:44px;height:44px;border-radius:50%;background:var(--glass-light);border:1px solid rgba(255,255,255,0.1);}
+  #a-place{width:62px;height:62px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 6px rgba(201,169,110,0.15),0 6px 22px var(--gold-glow);}
+  #a-place.s-move{background:#E8B84B;box-shadow:0 0 0 6px rgba(232,184,75,0.15),0 6px 22px rgba(232,184,75,0.4);}
+  #a-place.s-ok{background:var(--green);box-shadow:0 0 0 6px rgba(91,173,138,0.18),0 6px 22px rgba(91,173,138,0.38);animation:pop 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  #a-del{width:44px;height:44px;border-radius:50%;background:rgba(217,95,95,0.13);border:1px solid rgba(217,95,95,0.25);}
+  #a-del-one{width:44px;height:44px;border-radius:50%;background:rgba(217,95,95,0.13);border:1px solid rgba(217,95,95,0.25);}
+  #a-del-one.dim{opacity:0.25;pointer-events:none;}
   #ARButton{display:none!important;visibility:hidden!important;pointer-events:none!important;}
   @keyframes pop{from{transform:scale(0.82);}to{transform:scale(1);}}
-  #a-del{width:52px;height:52px;border-radius:50%;background:rgba(217,95,95,0.13);border:1px solid rgba(217,95,95,0.25);}
-  #a-del-one{width:52px;height:52px;border-radius:50%;background:rgba(217,95,95,0.13);border:1px solid rgba(217,95,95,0.25);}
-  #a-del-one.dim{opacity:0.25;pointer-events:none;}
   #rot-label{position:fixed;bottom:200px;right:20px;font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--sand);background:var(--glass-mid);backdrop-filter:var(--blur);padding:5px 14px;border-radius:50px;border:1px solid rgba(201,169,110,0.25);z-index:500;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
   #rot-label.on{opacity:1;}
 
@@ -1653,7 +1653,7 @@ renderer.xr.addEventListener("sessionstart", () => {
     setTimeout(() => (topStatus.textContent = "Tap a product to place"), 1200);
   });
 
-  aDelOne.addEventListener("click", () => {
+  aDelOne.addEventListener("click", (e) => {
     e.stopPropagation();
     stopSpin();
     const objToDelete = selectedObj;
@@ -1663,6 +1663,7 @@ renderer.xr.addEventListener("sessionstart", () => {
       scene.remove(selectedObj);
       selectedObj = null;
       appMode = "idle";
+      setSelectionHighlight(null);
       moveBanner.style.display = "none";
       setPlaceIcon("aim");
       setHint(null);
