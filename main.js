@@ -997,19 +997,38 @@ style.textContent = `
   .p-name{font-family:var(--f-body);font-size:12.5px;font-weight:500;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
 
   /* ── Action row ── */
-  #act-row{display:flex;align-items:center;justify-content:center;gap:9px;padding-top:4px;}
+  #act-row{display:flex;flex-direction:column;gap:12px;width:100%;padding-top:6px;}
   .a-btn{border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.12s,opacity 0.12s;background:transparent;}
   .a-btn:active{transform:scale(0.82);opacity:0.7;}
+  #act-row-top{display:flex;align-items:center;justify-content:center;gap:12px;}
 
-  #a-rot-l,#a-rot-r{width:44px;height:44px;border-radius:50%;background:#f0f4f3;border:1.5px solid rgba(24,83,79,0.22);transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;}
-  #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(24,83,79,0.12);border-color:var(--teal);}
+
+  #a-rot-l,#a-rot-r{width:64px;height:64px;border-radius:50%;background:#f0f4f3;border:1.5px solid rgba(24,83,79,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;flex-shrink:0;}
+  .rot-lbl{font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:0.04em;color:rgba(24,83,79,0.6);text-transform:capitalize;}
+  #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(24,83,79,0.1);border-color:var(--teal);}
   #a-rot-l.dim,#a-rot-r.dim{opacity:0.22;pointer-events:none;}
+
 
   #a-undo{width:44px;height:44px;border-radius:50%;background:#f5f5f5;border:1px solid rgba(24,83,79,0.1);}
 
-  #a-place{width:64px;height:64px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 7px rgba(24,83,79,0.1),0 6px 22px var(--teal-glow);}
-  #a-place.s-move{background:#1e6b60;box-shadow:0 0 0 7px rgba(30,107,96,0.12),0 6px 22px rgba(30,107,96,0.3);}
-  #a-place.s-ok{background:var(--green);box-shadow:0 0 0 7px rgba(30,122,94,0.15),0 6px 22px rgba(30,122,94,0.3);animation:pop 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  #a-place{flex:1;height:58px;border-radius:50px;background:var(--teal);display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 22px var(--teal-glow);border:none;transition:transform 0.15s,box-shadow 0.15s;}
+  #a-place:active{transform:scale(0.97);}
+  #place-lbl{font-family:var(--f-body);font-size:14px;font-weight:700;letter-spacing:0.08em;color:#fff;text-transform:uppercase;}
+  #a-place.s-move{background:#1e6b60;}
+  #a-place.s-ok{background:var(--green);animation:pop 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+
+  #act-row-bot{display:flex;align-items:center;justify-content:center;gap:10px;}
+
+  /* Pills secondaires */
+  .pill-btn{height:46px;border-radius:50px;padding:0 20px;background:#f5f8f7;border:1.5px solid rgba(24,83,79,0.12);display:flex;align-items:center;gap:8px;flex:1;justify-content:center;}
+  .pill-btn span{font-family:var(--f-body);font-size:13px;font-weight:500;color:rgba(24,83,79,0.75);}
+  .pill-btn:active{opacity:0.6;}
+
+  /* Delete pill — teinte rouge */
+  .pill-danger{background:#fff0f0;border-color:rgba(217,95,95,0.2);}
+  .pill-danger span{color:#D95F5F;}
+  .pill-danger.dim{opacity:0.28;pointer-events:none;}
+
 
   #a-del-one{width:44px;height:44px;border-radius:50%;background:#fff0f0;border:1px solid rgba(217,95,95,0.22);}
   #a-del-one.dim{opacity:0.22;pointer-events:none;}
@@ -1077,51 +1096,62 @@ uiBottom.innerHTML = `
       <div id="chip-rail"></div>
     </div>
     <div id="act-row">
-      <button class="a-btn dim" id="a-rot-l" title="Rotate left">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#18534F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/><polyline points="2 17 2.5 12 7.5 13.5"/>
-        </svg>
-      </button>
-      <button class="a-btn" id="a-undo">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(24,83,79,0.55)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
-        </svg>
-      </button>
-      <button class="a-btn" id="a-place">
-        <svg id="ico-aim" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="2.2"/>
-          <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-          <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-        </svg>
-        <svg id="ico-check" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        <svg id="ico-move" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-          <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/>
-          <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
-        </svg>
-      </button>
-      <button class="a-btn dim" id="a-del-one" title="Supprimer l'élément sélectionné">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D95F5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
-          <line x1="10" y1="11" x2="10" y2="17"/>
-          <line x1="14" y1="11" x2="14" y2="17"/>
-          <circle cx="20" cy="4" r="4" fill="#D95F5F" stroke="none"/>
-          <line x1="18" y1="2" x2="22" y2="6" stroke="white" stroke-width="1.8"/>
-          <line x1="22" y1="2" x2="18" y2="6" stroke="white" stroke-width="1.8"/>
-        </svg>
-      </button>
-      <button class="a-btn" id="a-del">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D95F5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
-        </svg>
-      </button>
-      <button class="a-btn dim" id="a-rot-r" title="Rotate right">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/><polyline points="22 17 21.5 12 16.5 13.5"/>
-        </svg>
-      </button>
+      <!-- Rangée 1 : Rotate gauche + Place + Rotate droite -->
+      <div id="act-row-top">
+        <button class="a-btn" id="a-rot-l" title="Rotate left">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#18534F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/><polyline points="2 17 2.5 12 7.5 13.5"/>
+          </svg>
+          <span class="rot-lbl">Rotate</span>
+        </button>
+
+        <button class="a-btn" id="a-place">
+          <svg width="18" height="18" viewBox="0 0 24 24" id="ico-aim-svg" fill="white" stroke="none">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" id="ico-check-svg" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" id="ico-move-svg" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/>
+            <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+          </svg>
+          <span id="place-lbl">PLACE FURNITURE</span>
+        </button>
+
+        <button class="a-btn" id="a-rot-r" title="Rotate right">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#18534F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/><polyline points="22 17 21.5 12 16.5 13.5"/>
+          </svg>
+          <span class="rot-lbl">Rotate</span>
+        </button>
+      </div>
+
+      <!-- Rangée 2 : Undo + Delete selected + Clear all -->
+      <div id="act-row-bot">
+        <button class="a-btn pill-btn" id="a-undo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(24,83,79,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+          </svg>
+          <span>Undo</span>
+        </button>
+
+        <button class="a-btn pill-btn pill-danger dim" id="a-del-one">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D95F5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+          </svg>
+          <span>Delete</span>
+        </button>
+
+        <button class="a-btn pill-btn" id="a-del">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(24,83,79,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+          <span>Clear All</span>
+        </button>
+      </div>
     </div>
   </div>
 `;
@@ -1357,6 +1387,13 @@ function setPlaceIcon(s) {
   icoAim.style.display = s === "aim" ? "" : "none";
   icoCheck.style.display = s === "check" ? "" : "none";
   icoMove.style.display = s === "move" ? "" : "none";
+
+  // labels selon état
+  const lbl = document.getElementById("place-lbl");
+  if (s === "aim") lbl.textContent = "PLACE FURNITURE";
+  if (s === "check") lbl.textContent = "CONFIRM POSITION";
+  if (s === "move") lbl.textContent = "LOCK POSITION";
+
   aPlace.classList.remove("s-move", "s-ok");
   if (s === "move") aPlace.classList.add("s-move");
   if (s === "check") aPlace.classList.add("s-ok");
