@@ -1175,9 +1175,9 @@ const aDel = document.getElementById("a-del");
 const aDelOne = document.getElementById("a-del-one");
 const aRotL = document.getElementById("a-rot-l");
 const aRotR = document.getElementById("a-rot-r");
-const icoAim = document.getElementById("ico-aim");
-const icoCheck = document.getElementById("ico-check");
-const icoMove = document.getElementById("ico-move");
+const icoAim = document.getElementById("ico-aim-svg");
+const icoCheck = document.getElementById("ico-check-svg");
+const icoMove = document.getElementById("ico-move-svg");
 const sr1 = document.getElementById("sr1");
 const sr2 = document.getElementById("sr2");
 
@@ -1185,14 +1185,14 @@ const sr2 = document.getElementById("sr2");
 const reticle = new THREE.Mesh(
   new THREE.RingGeometry(0.1, 0.14, 32).rotateX(-Math.PI / 2),
   new THREE.MeshBasicMaterial({
-    color: 0xc9a96e,
+    color: 0x18534f,
     side: THREE.DoubleSide,
     transparent: true,
     opacity: 0.85,
   }),
 );
 
-const selectionBox = new THREE.BoxHelper(new THREE.Object3D(), 0xc9a96e);
+const selectionBox = new THREE.BoxHelper(new THREE.Object3D(), 0x18534f);
 selectionBox.visible = false;
 scene.add(selectionBox);
 
