@@ -1709,21 +1709,6 @@ renderer.xr.addEventListener("sessionstart", () => {
     session.end();
   });
 
-  // session.addEventListener("end", () => {
-  //   stopSpin();
-  //   uiTop.classList.remove("on");
-  //   uiBottom.classList.remove("on");
-  //   panelCollapsed = false;
-  //   setScan(false);
-  //   moveBanner.style.display = "none";
-  //   rotLabel.classList.remove("on");
-  //   setHint(null);
-  //   startScreen.style.display = "flex";
-  //   hitTestSource = null;
-  //   hitTestSourceRequested = false;
-  //   floorFound = false;
-  // });
-
   session.addEventListener("end", () => {
     stopSpin();
     uiTop.classList.remove("on");
@@ -1737,9 +1722,6 @@ renderer.xr.addEventListener("sessionstart", () => {
     hitTestSource = null;
     hitTestSourceRequested = false;
     floorFound = false;
-
-    // ── Tell Flutter to close the WebView ────────────────────────
-    window.location.href = "https://casadeco-app.redirect/ar/close";
   });
 });
 
