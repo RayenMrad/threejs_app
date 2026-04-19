@@ -1707,6 +1707,7 @@ renderer.xr.addEventListener("sessionstart", () => {
   btnStop.addEventListener("click", () => {
     stopSpin();
     session.end();
+    if (window.FlutterBridge) window.FlutterBridge.postMessage("close");
   });
 
   session.addEventListener("end", () => {
