@@ -943,25 +943,52 @@
 // });
 
 // ─── Globals from CDN scripts (no imports needed) ────────────
-const { MindARThree } = window.MINDAR.WORLD;
-const THREE = window.THREE;
-const GLTFLoader = window.THREE.GLTFLoader || window.GLTFLoader;
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-// ─── MindAR init ─────────────────────────────────────────────
-const mindarThree = new MindARThree({ container: document.body });
-const { renderer, scene, camera } = mindarThree;
+// ─── Camera feed setup ────────────────────────────────────────
+const video = document.getElementById("video-bg");
+try {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment", width: 1280, height: 720 },
+    audio: false,
+  });
+  video.srcObject = stream;
+} catch (err) {
+  console.error("Camera error:", err);
+}
+
+// ─── Three.js renderer on top of video ───────────────────────
+const canvas = document.getElementById("ar-canvas");
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+  alpha: true,
+});
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 0); // transparent — shows video behind
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(
+  70,
+  window.innerWidth / window.innerHeight,
+  0.01,
+  20,
+);
+camera.position.set(0, 1.6, 0); // eye height
 
 scene.add(new THREE.AmbientLight(0xffffff, 2.0));
 const sun = new THREE.DirectionalLight(0xffffff, 2.0);
 sun.position.set(2, 4, 2);
 scene.add(sun);
 
-// ─── Floor plane (replaces WebXR hit-test) ───────────────────
+// ─── Floor plane ─────────────────────────────────────────────
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const tapRaycaster = new THREE.Raycaster();
 const floorPos = new THREE.Vector3();
 let floorFound = false;
-let arStarted = false;
+let arStarted = true; // starts immediately — no MindAR needed
 
 function screenToFloor(clientX, clientY) {
   const x = (clientX / window.innerWidth) * 2 - 1;
@@ -1787,54 +1814,40 @@ aDelOne.addEventListener("click", (e) => {
   }
 });
 
-// ─── Start AR ─────────────────────────────────────────────────
-document.getElementById("btn-start-ar").addEventListener("click", async () => {
-  if (arStarted) return;
-  const btn = document.getElementById("btn-start-ar");
-  btn.disabled = true;
-  btn.textContent = "Starting…";
+// ─── Start AR immediately (no MindAR.start() needed) ─────────
+document.getElementById("btn-start-ar").addEventListener("click", () => {
+  startScreen.style.display = "none";
+  uiTop.classList.add("on");
+  uiBottom.classList.add("on");
+  panelCollapsed = false;
+  uiBottom.classList.remove("collapsed");
 
-  try {
-    await mindarThree.start();
-    arStarted = true;
+  buildRail();
+  loadModel(products.find((p) => p.id === activeProductId).url);
 
-    startScreen.style.display = "none";
-    uiTop.classList.add("on");
-    uiBottom.classList.add("on");
-    panelCollapsed = false;
-    uiBottom.classList.remove("collapsed");
-
-    buildRail();
-    loadModel(products.find((p) => p.id === activeProductId).url);
-
-    // Render loop
-    renderer.setAnimationLoop(() => {
-      // Keep selection box updated while dragging
-      if (appMode === "selected" && selectedObj) {
-        setSelectionHighlight(selectedObj);
+  renderer.setAnimationLoop(() => {
+    if (appMode === "selected" && selectedObj) {
+      setSelectionHighlight(selectedObj);
+    }
+    placedList.forEach((obj) => {
+      if (obj !== selectedObj) {
+        obj.rotation.y = frozenRotations.get(obj) ?? 0;
       }
-      // Keep placed objects at their frozen rotation
-      placedList.forEach((obj) => {
-        if (obj !== selectedObj) {
-          obj.rotation.y = frozenRotations.get(obj) ?? 0;
-        }
-      });
-      renderer.render(scene, camera);
     });
-  } catch (err) {
-    console.error("[MindAR] start failed:", err);
-    btn.disabled = false;
-    btn.textContent = "Start AR Experience";
-    topStatus.textContent = "Camera error — check permissions";
-  }
+    renderer.render(scene, camera);
+  });
 });
 
 // ─── Stop AR ─────────────────────────────────────────────────
-btnStop.addEventListener("click", async () => {
+btnStop.addEventListener("click", () => {
   stopSpin();
   renderer.setAnimationLoop(null);
-  await mindarThree.stop();
-  arStarted = false;
+
+  // Stop camera
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach((t) => t.stop());
+    video.srcObject = null;
+  }
 
   uiTop.classList.remove("on");
   uiBottom.classList.remove("on");
@@ -1845,10 +1858,6 @@ btnStop.addEventListener("click", async () => {
   rotLabel.classList.remove("on");
   setHint(null);
   floorFound = false;
-
-  const btn = document.getElementById("btn-start-ar");
-  btn.disabled = false;
-  btn.textContent = "Start AR Experience";
   startScreen.style.display = "flex";
 });
 
