@@ -62,124 +62,139 @@
 // const style = document.createElement("style");
 // style.textContent = `
 //   :root {
-//     --teal:#18534F;--teal-dark:#0f3835;
-//     --teal-mid:rgba(24,83,79,0.75);--teal-glow:rgba(24,83,79,0.22);
-//     --teal-soft:rgba(24,83,79,0.1);--teal-chip:rgba(24,83,79,0.07);
-//     --sand:#18534F;--ink:#18534F;--muted:rgba(24,83,79,0.42);
-//     --red:#D95F5F;--green:#1e7a5e;
-//     --glass-dark:rgba(255,255,255,0.97);
-//     --glass-mid:rgba(255,255,255,0.88);
-//     --glass-light:rgba(24,83,79,0.05);
+//     --sand:#EDE8DF;--ink:#18181A;--muted:#9A9590;
+//     --gold:#C9A96E;--gold-glow:rgba(201,169,110,0.35);
+//     --red:#D95F5F;--green:#5BAD8A;
+//     --glass-dark:rgba(18,18,20,0.82);--glass-mid:rgba(18,18,20,0.58);
+//     --glass-light:rgba(255,255,255,0.07);
 //     --blur:blur(24px);
-//     --page-bg:#EEF3F2;
 //     --f-body:'DM Sans',sans-serif;--f-display:'Cormorant Garamond',serif;
 //   }
 //   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 
-//   body{background:var(--page-bg);}
-
-//   /* ── Start screen ── */
-//   #start-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#f5f9f8;z-index:1000;}
-//   #start-screen h1{font-family:var(--f-display);font-size:32px;font-weight:600;color:var(--teal);letter-spacing:0.02em;margin:0;}
+//   #start-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0e0e10;z-index:1000;}
+//   #start-screen h1{font-family:var(--f-display);font-size:32px;font-weight:600;color:var(--sand);letter-spacing:0.02em;margin:0;}
 //   #start-screen p{font-family:var(--f-body);font-size:13px;color:var(--muted);margin:0;}
-//   #start-logo{width:180px;height:180px;object-fit:contain;margin-bottom:8px;animation:logoIn 0.8s ease both;}
-//   @keyframes logoIn{from{opacity:0;transform:scale(0.88);}to{opacity:1;transform:scale(1);}}
-//   #btn-start-ar{margin-top:8px;padding:14px 44px;background:var(--teal);color:#fff;font-family:var(--f-body);font-size:14px;font-weight:600;letter-spacing:0.05em;border:none;border-radius:50px;cursor:pointer;box-shadow:0 8px 32px var(--teal-glow);transition:transform 0.15s;}
+//   #start-logo {
+//     width: 180px;
+//     height: 180px;
+//     object-fit: contain;
+//     margin-bottom: 8px;
+//     /* subtle fade-in */
+//     animation: logoIn 0.8s ease both;
+//   }
+//   @keyframes logoIn {
+//     from { opacity: 0; transform: scale(0.88); }
+//     to   { opacity: 1; transform: scale(1); }
+//   }
+//   #btn-start-ar{margin-top:8px;padding:14px 40px;background:var(--gold);color:var(--ink);font-family:var(--f-body);font-size:14px;font-weight:600;letter-spacing:0.04em;border:none;border-radius:50px;cursor:pointer;box-shadow:0 8px 32px var(--gold-glow);transition:transform 0.15s;}
 //   #btn-start-ar:active{transform:scale(0.95);}
 
-//   /* ── Top bar ── */
-//   #ui-top{position:fixed;top:0;left:0;right:0;height:62px;display:none;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(255,255,255,0.96);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid rgba(24,83,79,0.1);z-index:500;}
+//   #ui-top{position:fixed;top:0;left:0;right:0;height:66px;display:none;align-items:center;justify-content:space-between;padding:0 20px;background:var(--glass-dark);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid rgba(255,255,255,0.06);z-index:500;}
 //   #ui-top.on{display:flex;}
-//   #top-left{display:flex;flex-direction:column;gap:2px;}
-//   #top-name{font-family:var(--f-display);font-size:19px;font-weight:600;color:var(--teal);letter-spacing:0.01em;}
-//   #top-status{font-family:var(--f-body);font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
-//   #btn-stop{padding:8px 18px;background:rgba(24,83,79,0.06);border:1px solid rgba(24,83,79,0.18);border-radius:50px;color:var(--teal);font-family:var(--f-body);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.15s;}
-//   #btn-stop:active{background:rgba(24,83,79,0.14);}
+//   #top-left{display:flex;flex-direction:column;gap:1px;}
+//   #top-name{font-family:var(--f-display);font-size:19px;font-weight:600;color:var(--sand);letter-spacing:0.01em;}
+//   #top-status{font-family:var(--f-body);font-size:11px;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;}
+//   #btn-stop{padding:8px 18px;background:rgba(217,95,95,0.18);border:1px solid rgba(217,95,95,0.35);border-radius:50px;color:#E07070;font-family:var(--f-body);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.15s;backdrop-filter:var(--blur);}
+//   #btn-stop:active{background:rgba(217,95,95,0.32);}
 
-//   /* ── Scan rings ── */
-//   .s-ring{position:fixed;top:50%;left:50%;border:1.5px solid var(--teal);border-radius:50%;pointer-events:none;z-index:300;opacity:0;transition:opacity 0.4s;transform:translate(-50%,-56%);}
+//   .s-ring{position:fixed;top:50%;left:50%;border:1.5px solid var(--gold);border-radius:50%;pointer-events:none;z-index:300;opacity:0;transition:opacity 0.4s;transform:translate(-50%,-56%);}
 //   .s-ring.on{animation:sPulse 2s ease-in-out infinite;}
 //   #sr1{width:160px;height:80px;}
 //   #sr2{width:220px;height:110px;animation-delay:0.35s;}
-//   #sr1.on{opacity:0.6;}#sr2.on{opacity:0.25;}
+//   #sr1.on{opacity:0.65;}#sr2.on{opacity:0.28;}
 //   @keyframes sPulse{0%,100%{transform:translate(-50%,-56%) scale(1);}50%{transform:translate(-50%,-56%) scale(1.07);}}
 
-//   /* ── Hint pill ── */
-//   #hint-pill{position:fixed;top:74px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:11.5px;font-weight:600;color:#fff;background:var(--teal);backdrop-filter:var(--blur);padding:6px 18px;border-radius:50px;border:none;z-index:500;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity 0.25s;}
+//   #hint-pill{position:fixed;top:78px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:12px;font-weight:500;color:rgba(255,255,255,0.9);background:var(--glass-mid);backdrop-filter:var(--blur);padding:6px 16px;border-radius:50px;border:1px solid rgba(255,255,255,0.08);z-index:500;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity 0.25s;}
 //   #hint-pill.on{opacity:1;}
 
-//   /* ── Move banner ── */
-//   #move-banner{position:fixed;bottom:230px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff;background:var(--teal);padding:7px 22px;border-radius:50px;z-index:500;pointer-events:none;display:none;white-space:nowrap;box-shadow:0 4px 20px var(--teal-glow);}
+//   #move-banner{position:fixed;bottom:230px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink);background:var(--gold);padding:6px 20px;border-radius:50px;z-index:500;pointer-events:none;display:none;white-space:nowrap;box-shadow:0 4px 20px var(--gold-glow);}
 
 //   /* ── Bottom panel ── */
-//   #ui-bottom{position:fixed;bottom:0;left:0;right:0;display:none;flex-direction:column;gap:10px;background:#fff;border-top:1px solid rgba(24,83,79,0.09);border-radius:22px 22px 0 0;padding:0 20px 44px;z-index:500;transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);transform:translateY(0);}
-//   #ui-bottom.on{display:flex;}
-//   #ui-bottom.collapsed{transform:translateY(calc(100% - 36px));}
+//   #ui-bottom {
+//     position: fixed; bottom: 0; left: 0; right: 0;
+//     display: none; flex-direction: column; gap: 12px;
+//     background: var(--glass-dark);
+//     backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+//     border-top: 1px solid rgba(255,255,255,0.07);
+//     border-radius: 22px 22px 0 0;
+//     padding: 0 22px 44px;
+//     z-index: 500;
+//     /* smooth open/close */
+//     transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+//     transform: translateY(0);
+//   }
+//   #ui-bottom.on { display: flex; }
+//   /* collapsed: slide down so only the handle tab peeks out */
+//   #ui-bottom.collapsed { transform: translateY(calc(100% - 36px)); }
 
-//   /* ── Panel toggle ── */
-//   #panel-toggle{display:flex;align-items:center;justify-content:center;width:100%;padding:10px 0 4px;cursor:pointer;}
-//   #panel-toggle-inner{display:flex;flex-direction:column;align-items:center;gap:4px;}
-//   #drag-handle{width:36px;height:3px;background:rgba(24,83,79,0.15);border-radius:2px;transition:background 0.2s;}
-//   #panel-toggle:active #drag-handle{background:rgba(24,83,79,0.35);}
-//   #toggle-chevron{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:5px solid rgba(24,83,79,0.25);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);transform:rotate(0deg);}
-//   #ui-bottom.collapsed #toggle-chevron{transform:rotate(180deg);}
-//   #ui-bottom.collapsed #panel-content{visibility:hidden;}
+//   /* ── Toggle tab — always visible when panel is open ── */
+//   #panel-toggle {
+//     display: flex; align-items: center; justify-content: center;
+//     width: 100%; padding: 10px 0 6px; cursor: pointer;
+//     /* extends the tap area without adding height to the panel */
+//     margin-bottom: 2px;
+//   }
+//   /* Animated chevron pill */
+//   #panel-toggle-inner {
+//     display: flex; flex-direction: column; align-items: center; gap: 3px;
+//   }
+//   #drag-handle {
+//     width: 34px; height: 3px;
+//     background: rgba(255,255,255,0.25);
+//     border-radius: 2px;
+//     transition: background 0.2s;
+//   }
+//   #panel-toggle:active #drag-handle { background: rgba(255,255,255,0.55); }
 
-//   /* ── Labels ── */
-//   .sec-label{font-family:var(--f-body);font-size:9.5px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+//   /* chevron arrow */
+//   #toggle-chevron {
+//     width: 0; height: 0;
+//     border-left: 5px solid transparent;
+//     border-right: 5px solid transparent;
+//     border-bottom: 5px solid rgba(255,255,255,0.35);
+//     transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.2s;
+//     /* default: pointing UP (panel open → tap to close) */
+//     transform: rotate(0deg);
+//   }
+//   /* when collapsed: chevron points DOWN (tap to open) */
+//   #ui-bottom.collapsed #toggle-chevron {
+//     transform: rotate(180deg);
+//   }
 
-//   /* ── Chip rail ── */
-//   #chip-rail{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 0 4px;}
+//   /* hide inner content when collapsed so it can't be tapped */
+//   #ui-bottom.collapsed #panel-content { visibility: hidden; }
+
+//   .sec-label{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+
+//   #chip-rail{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 0;}
 //   #chip-rail::-webkit-scrollbar{display:none;}
-//   .p-chip{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:10px 14px 10px 10px;background:#f5f8f7;border:1.5px solid rgba(24,83,79,0.1);border-radius:14px;cursor:pointer;transition:border-color 0.2s,background 0.2s;min-width:150px;max-width:210px;}
-//   .p-chip.active{border-color:var(--teal);background:rgba(24,83,79,0.07);}
+
+//   .p-chip{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:9px 16px 9px 9px;background:var(--glass-light);border:1.5px solid rgba(255,255,255,0.08);border-radius:14px;cursor:pointer;transition:border-color 0.2s,background 0.2s;min-width:160px;max-width:220px;}
+//   .p-chip.active{border-color:var(--gold);background:rgba(201,169,110,0.12);}
 //   .p-chip:active{opacity:0.6;}
-//   .p-thumb{width:42px;height:42px;flex-shrink:0;background:rgba(24,83,79,0.08);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;}
-//   .p-thumb img{width:42px;height:42px;object-fit:cover;border-radius:9px;display:block;}
+//   .p-thumb{width:44px;height:44px;flex-shrink:0;background:rgba(255,255,255,0.06);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;}
+//   .p-thumb img{width:44px;height:44px;object-fit:cover;border-radius:10px;display:block;}
 //   .p-info{display:flex;align-items:center;min-width:0;}
-//   .p-name{font-family:var(--f-body);font-size:12.5px;font-weight:500;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
+//   .p-name{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
 
-//   /* ── Action row ── */
-//   #act-row{display:flex;flex-direction:column;gap:12px;width:100%;padding-top:6px;}
-//   .a-btn{border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.12s,opacity 0.12s;background:transparent;}
+//   #act-row{display:flex;align-items:center;justify-content:center;gap:14px;}
+//   .a-btn{border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.12s,opacity 0.12s;}
 //   .a-btn:active{transform:scale(0.82);opacity:0.7;}
-//   #act-row-top{display:flex;align-items:center;justify-content:center;gap:12px;}
 
-//   #a-rot-l,#a-rot-r{width:64px;height:64px;border-radius:50%;background:#f0f4f3;border:1.5px solid rgba(24,83,79,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;flex-shrink:0;}
-//   .rot-lbl{font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:0.04em;color:rgba(24,83,79,0.6);text-transform:capitalize;}
-//   #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(24,83,79,0.1);border-color:var(--teal);}
-//   #a-rot-l.dim,#a-rot-r.dim{opacity:0.22;pointer-events:none;}
+//   #a-rot-l,#a-rot-r{width:48px;height:48px;border-radius:50%;background:var(--glass-light);border:1.5px solid rgba(201,169,110,0.35);transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;}
+//   #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(201,169,110,0.18);border-color:rgba(201,169,110,0.7);}
+//   #a-rot-l.dim,#a-rot-r.dim{opacity:0.25;pointer-events:none;}
 
-//   #a-undo{width:44px;height:44px;border-radius:50%;background:#f5f5f5;border:1px solid rgba(24,83,79,0.1);}
-
-//   #a-place{flex:1;height:58px;border-radius:50px;background:var(--teal);display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 22px var(--teal-glow);border:none;transition:transform 0.15s,box-shadow 0.15s;}
-//   #a-place:active{transform:scale(0.97);}
-//   #place-lbl{font-family:var(--f-body);font-size:14px;font-weight:700;letter-spacing:0.08em;color:#fff;text-transform:uppercase;}
-//   #a-place.s-move{background:#1e6b60;}
-//   #a-place.s-ok{background:var(--green);animation:pop 0.3s cubic-bezier(0.34,1.56,0.64,1);}
-
-//   #act-row-bot{display:flex;align-items:center;justify-content:center;gap:10px;}
-
-//   /* Pills secondaires */
-//   .pill-btn{height:46px;border-radius:50px;padding:0 20px;background:#f5f8f7;border:1.5px solid rgba(24,83,79,0.12);display:flex;align-items:center;gap:8px;flex:1;justify-content:center;}
-//   .pill-btn span{font-family:var(--f-body);font-size:13px;font-weight:500;color:rgba(24,83,79,0.75);}
-//   .pill-btn:active{opacity:0.6;}
-
-//   /* Delete pill — teinte rouge */
-//   .pill-danger{background:#fff0f0;border-color:rgba(217,95,95,0.2);}
-//   .pill-danger span{color:#D95F5F;}
-//   .pill-danger.dim{opacity:0.28;pointer-events:none;}
-
-//   #a-del-one{width:44px;height:44px;border-radius:50%;background:#fff0f0;border:1px solid rgba(217,95,95,0.22);}
-//   #a-del-one.dim{opacity:0.22;pointer-events:none;}
-
-//   #a-del{width:44px;height:44px;border-radius:50%;background:#f8f5f5;border:1px solid rgba(24,83,79,0.1);}
-
+//   #a-undo{width:52px;height:52px;border-radius:50%;background:var(--glass-light);border:1px solid rgba(255,255,255,0.1);}
+//   #a-place{width:70px;height:70px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 8px rgba(201,169,110,0.15),0 8px 28px var(--gold-glow);}
+//   #a-place.s-move{background:#E8B84B;box-shadow:0 0 0 8px rgba(232,184,75,0.15),0 8px 28px rgba(232,184,75,0.4);}
+//   #a-place.s-ok{background:var(--green);box-shadow:0 0 0 8px rgba(91,173,138,0.18),0 8px 28px rgba(91,173,138,0.38);animation:pop 0.3s cubic-bezier(0.34,1.56,0.64,1);}
 //   #ARButton{display:none!important;visibility:hidden!important;pointer-events:none!important;}
 //   @keyframes pop{from{transform:scale(0.82);}to{transform:scale(1);}}
+//   #a-del{width:52px;height:52px;border-radius:50%;background:rgba(217,95,95,0.13);border:1px solid rgba(217,95,95,0.25);}
 
-//   /* ── Rot label ── */
-//   #rot-label{position:fixed;bottom:195px;right:18px;font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff;background:var(--teal);backdrop-filter:var(--blur);padding:5px 14px;border-radius:50px;z-index:500;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
+//   #rot-label{position:fixed;bottom:200px;right:20px;font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--sand);background:var(--glass-mid);backdrop-filter:var(--blur);padding:5px 14px;border-radius:50px;border:1px solid rgba(201,169,110,0.25);z-index:500;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
 //   #rot-label.on{opacity:1;}
 
 //   @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
@@ -236,62 +251,41 @@
 //       <div id="chip-rail"></div>
 //     </div>
 //     <div id="act-row">
-//       <!-- Rangée 1 : Rotate gauche + Place + Rotate droite -->
-//       <div id="act-row-top">
-//         <button class="a-btn" id="a-rot-l" title="Rotate left">
-//           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#18534F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-//             <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/><polyline points="2 17 2.5 12 7.5 13.5"/>
-//           </svg>
-//           <span class="rot-lbl">Rotate</span>
-//         </button>
-
-//         <button class="a-btn" id="a-place">
-//           <svg width="18" height="18" viewBox="0 0 24 24" id="ico-aim-svg" fill="white" stroke="none">
-//             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-//           </svg>
-//           <svg width="20" height="20" viewBox="0 0 24 24" id="ico-check-svg" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-//             <polyline points="20 6 9 17 4 12"/>
-//           </svg>
-//           <svg width="20" height="20" viewBox="0 0 24 24" id="ico-move-svg" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-//             <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/>
-//             <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
-//           </svg>
-//           <span id="place-lbl">PLACE FURNITURE</span>
-//         </button>
-
-//         <button class="a-btn" id="a-rot-r" title="Rotate right">
-//           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#18534F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-//             <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/><polyline points="22 17 21.5 12 16.5 13.5"/>
-//           </svg>
-//           <span class="rot-lbl">Rotate</span>
-//         </button>
-//       </div>
-
-//       <!-- Rangée 2 : Undo + Delete selected + Clear all -->
-//       <div id="act-row-bot">
-//         <button class="a-btn pill-btn" id="a-undo">
-//           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(24,83,79,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-//             <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
-//           </svg>
-//           <span>Undo</span>
-//         </button>
-
-//         <button class="a-btn pill-btn pill-danger dim" id="a-del-one">
-//           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D95F5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-//             <polyline points="3 6 5 6 21 6"/>
-//             <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
-//           </svg>
-//           <span>Delete</span>
-//         </button>
-
-//         <button class="a-btn pill-btn" id="a-del">
-//           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(24,83,79,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-//             <circle cx="12" cy="12" r="10"/>
-//             <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-//           </svg>
-//           <span>Clear All</span>
-//         </button>
-//       </div>
+//       <button class="a-btn dim" id="a-rot-l" title="Rotate left">
+//         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+//           <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/><polyline points="2 17 2.5 12 7.5 13.5"/>
+//         </svg>
+//       </button>
+//       <button class="a-btn" id="a-undo">
+//         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+//           <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+//         </svg>
+//       </button>
+//       <button class="a-btn" id="a-place">
+//         <svg id="ico-aim" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
+//           <circle cx="12" cy="12" r="2.2"/>
+//           <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+//           <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+//         </svg>
+//         <svg id="ico-check" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+//           <polyline points="20 6 9 17 4 12"/>
+//         </svg>
+//         <svg id="ico-move" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+//           <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/>
+//           <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+//         </svg>
+//       </button>
+//       <button class="a-btn" id="a-del">
+//         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D95F5F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+//           <polyline points="3 6 5 6 21 6"/>
+//           <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+//         </svg>
+//       </button>
+//       <button class="a-btn dim" id="a-rot-r" title="Rotate right">
+//         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+//           <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/><polyline points="22 17 21.5 12 16.5 13.5"/>
+//         </svg>
+//       </button>
 //     </div>
 //   </div>
 // `;
@@ -312,12 +306,11 @@
 // const aPlace = document.getElementById("a-place");
 // const aUndo = document.getElementById("a-undo");
 // const aDel = document.getElementById("a-del");
-// const aDelOne = document.getElementById("a-del-one");
 // const aRotL = document.getElementById("a-rot-l");
 // const aRotR = document.getElementById("a-rot-r");
-// const icoAim = document.getElementById("ico-aim-svg");
-// const icoCheck = document.getElementById("ico-check-svg");
-// const icoMove = document.getElementById("ico-move-svg");
+// const icoAim = document.getElementById("ico-aim");
+// const icoCheck = document.getElementById("ico-check");
+// const icoMove = document.getElementById("ico-move");
 // const sr1 = document.getElementById("sr1");
 // const sr2 = document.getElementById("sr2");
 
@@ -325,26 +318,12 @@
 // const reticle = new THREE.Mesh(
 //   new THREE.RingGeometry(0.1, 0.14, 32).rotateX(-Math.PI / 2),
 //   new THREE.MeshBasicMaterial({
-//     color: 0x18534f,
+//     color: 0xc9a96e,
 //     side: THREE.DoubleSide,
 //     transparent: true,
 //     opacity: 0.85,
 //   }),
 // );
-
-// const selectionBox = new THREE.BoxHelper(new THREE.Object3D(), 0x18534f);
-// selectionBox.visible = false;
-// scene.add(selectionBox);
-
-// function setSelectionHighlight(obj) {
-//   if (obj) {
-//     selectionBox.setFromObject(obj);
-//     selectionBox.visible = true;
-//   } else {
-//     selectionBox.visible = false;
-//   }
-// }
-
 // reticle.matrixAutoUpdate = false;
 // reticle.visible = false;
 // scene.add(reticle);
@@ -461,17 +440,10 @@
 //     aRotL.classList.add("dim");
 //     aRotR.classList.add("dim");
 //     rotLabel.classList.remove("on");
-//     aDelOne.classList.add("dim");
 //     return;
 //   }
 //   aRotL.classList.remove("dim");
 //   aRotR.classList.remove("dim");
-//   // activer le bouton "supprimer" seulement si on est en mode sélection
-//   if (appMode === "selected") {
-//     aDelOne.classList.remove("dim"); // ← nouveau
-//   } else {
-//     aDelOne.classList.add("dim"); // ← nouveau
-//   }
 //   const deg = Math.round(
 //     (((userRotations.get(target) ?? 0) * 180) / Math.PI + 3600) % 360,
 //   );
@@ -527,13 +499,6 @@
 //   icoAim.style.display = s === "aim" ? "" : "none";
 //   icoCheck.style.display = s === "check" ? "" : "none";
 //   icoMove.style.display = s === "move" ? "" : "none";
-
-//   // labels selon état
-//   const lbl = document.getElementById("place-lbl");
-//   if (s === "aim") lbl.textContent = "PLACE FURNITURE";
-//   if (s === "check") lbl.textContent = "CONFIRM POSITION";
-//   if (s === "move") lbl.textContent = "LOCK POSITION";
-
 //   aPlace.classList.remove("s-move", "s-ok");
 //   if (s === "move") aPlace.classList.add("s-move");
 //   if (s === "check") aPlace.classList.add("s-ok");
@@ -594,10 +559,6 @@
 //     scene.remove(previewObj);
 //     previewObj = null;
 //   }
-
-//   selectedObj = null;
-//   setSelectionHighlight(null);
-
 //   gltfScene = null;
 //   appMode = "idle";
 //   topStatus.textContent = "Loading…";
@@ -656,7 +617,6 @@
 //     placedList.push(previewObj);
 //     previewObj = null;
 //     appMode = "idle";
-//     setSelectionHighlight(null);
 //     moveBanner.style.display = "none";
 //     setPlaceIcon("check");
 //     topStatus.textContent = "Placed!";
@@ -672,7 +632,6 @@
 //     frozenRotations.set(selectedObj, selectedObj.rotation.y);
 //     selectedObj = null;
 //     appMode = "idle";
-//     setSelectionHighlight(null);
 //     moveBanner.style.display = "none";
 //     setPlaceIcon("check");
 //     topStatus.textContent = "Position locked";
@@ -699,30 +658,8 @@
 
 //   const session = renderer.xr.getSession();
 //   const raycaster = new THREE.Raycaster();
-//   let domTapped = false;
-//   document.getElementById("ui-bottom").addEventListener(
-//     "pointerdown",
-//     () => {
-//       domTapped = true;
-//       setTimeout(() => {
-//         domTapped = false;
-//       }, 400);
-//     },
-//     { passive: true },
-//   );
-//   document.getElementById("ui-top").addEventListener(
-//     "pointerdown",
-//     () => {
-//       domTapped = true;
-//       setTimeout(() => {
-//         domTapped = false;
-//       }, 400);
-//     },
-//     { passive: true },
-//   );
 
 //   session.addEventListener("select", () => {
-//     if (domTapped) return;
 //     if (appMode === "previewing") {
 //       doConfirm();
 //       return;
@@ -753,7 +690,6 @@
 //         if (hitObj) {
 //           selectedObj = hitObj;
 //           appMode = "selected";
-//           setSelectionHighlight(hitObj);
 //           moveBanner.style.display = "block";
 //           setPlaceIcon("move");
 //           topStatus.textContent = "Moving item";
@@ -769,7 +705,6 @@
 //     } else if (appMode === "idle" && placedList.length > 0) {
 //       selectedObj = placedList[placedList.length - 1];
 //       appMode = "selected";
-//       setSelectionHighlight(selectedObj);
 //       moveBanner.style.display = "block";
 //       setPlaceIcon("move");
 //       topStatus.textContent = "Moving item";
@@ -822,26 +757,6 @@
 //     topStatus.textContent = "Cleared";
 //     updateRotUI();
 //     setTimeout(() => (topStatus.textContent = "Tap a product to place"), 1200);
-//   });
-
-//   aDelOne.addEventListener("click", (e) => {
-//     e.stopPropagation();
-//     stopSpin();
-//     const objToDelete = selectedObj;
-//     if (appMode === "selected" && selectedObj) {
-//       const i = placedList.indexOf(selectedObj);
-//       if (i !== -1) placedList.splice(i, 1);
-//       scene.remove(selectedObj);
-//       selectedObj = null;
-//       appMode = "idle";
-//       setSelectionHighlight(null);
-//       moveBanner.style.display = "none";
-//       setPlaceIcon("aim");
-//       setHint(null);
-//       topStatus.textContent = "Élément supprimé";
-//       updateRotUI();
-//       setTimeout(() => (topStatus.textContent = "Prêt"), 1200);
-//     }
 //   });
 
 //   btnStop.addEventListener("click", () => {
@@ -914,7 +829,6 @@
 
 //         if (appMode === "selected" && selectedObj) {
 //           positionObject(selectedObj, camPos);
-//           setSelectionHighlight(selectedObj);
 //         }
 //       } else {
 //         reticle.visible = false;
@@ -941,24 +855,16 @@
 //   camera.updateProjectionMatrix();
 //   renderer.setSize(window.innerWidth, window.innerHeight);
 // });
-
-// ─── Globals from CDN scripts (no imports needed) ────────────
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { ARButton } from "three/addons/webxr/ARButton.js";
 
-// ─── Camera element (stream started on button click) ─────────
-const video = document.getElementById("video-bg");
-
-// ─── Three.js renderer on top of video ───────────────────────
-const canvas = document.getElementById("ar-canvas");
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true,
-  alpha: true,
-});
+// ─── Renderer ────────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000, 0); // transparent — shows video behind
+renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -967,69 +873,42 @@ const camera = new THREE.PerspectiveCamera(
   0.01,
   20,
 );
-camera.position.set(0, 1.6, 0); // eye height
-
 scene.add(new THREE.AmbientLight(0xffffff, 2.0));
 const sun = new THREE.DirectionalLight(0xffffff, 2.0);
 sun.position.set(2, 4, 2);
 scene.add(sun);
 
-// ─── Floor plane ─────────────────────────────────────────────
-const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-const tapRaycaster = new THREE.Raycaster();
-const floorPos = new THREE.Vector3();
-let floorFound = false;
-let arStarted = true; // starts immediately — no MindAR needed
+const statusEl = document.getElementById("status");
+if (statusEl) statusEl.style.display = "none";
 
-function screenToFloor(clientX, clientY) {
-  const x = (clientX / window.innerWidth) * 2 - 1;
-  const y = -(clientY / window.innerHeight) * 2 + 1;
-  tapRaycaster.setFromCamera({ x, y }, camera);
-  const target = new THREE.Vector3();
-  const hit = tapRaycaster.ray.intersectPlane(floorPlane, target);
-  return hit ? target : null;
-}
+const arBtn = ARButton.createButton(renderer, {
+  requiredFeatures: ["hit-test"],
+  optionalFeatures: ["dom-overlay"],
+  domOverlay: { root: document.body },
+});
+arBtn.id = "ARButton";
+arBtn.style.cssText =
+  "position:fixed;bottom:-9999px;left:-9999px;opacity:0;pointer-events:none;width:1px;height:1px;";
+document.body.appendChild(arBtn);
 
-function raycastPlacedObjects(clientX, clientY) {
-  const x = (clientX / window.innerWidth) * 2 - 1;
-  const y = -(clientY / window.innerHeight) * 2 + 1;
-  tapRaycaster.setFromCamera({ x, y }, camera);
-  const targets = [];
-  placedList.forEach((obj) =>
-    obj.traverse((c) => {
-      if (c.isMesh) targets.push(c);
-    }),
-  );
-  return tapRaycaster.intersectObjects(targets, false);
-}
+// ─── DOM ─────────────────────────────────────────────────────
+const startScreen = document.createElement("div");
+startScreen.id = "start-screen";
+startScreen.innerHTML = `
+ <img
+    id="start-logo"
+    src="/ar_logo.png"
+    alt="CasaDeco AR"
+  />
+  <h1>CasaDeco AR</h1>
+  <p>Visualise furniture in your space</p>
+  <button id="btn-start-ar">Start AR Experience</button>`;
+document.body.appendChild(startScreen);
 
-// ─── Reticle ─────────────────────────────────────────────────
-const reticle = new THREE.Mesh(
-  new THREE.RingGeometry(0.1, 0.14, 32).rotateX(-Math.PI / 2),
-  new THREE.MeshBasicMaterial({
-    color: 0x18534f,
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.85,
-  }),
-);
-reticle.visible = false;
-scene.add(reticle);
+document
+  .getElementById("btn-start-ar")
+  .addEventListener("click", () => arBtn.click());
 
-const selectionBox = new THREE.BoxHelper(new THREE.Object3D(), 0x18534f);
-selectionBox.visible = false;
-scene.add(selectionBox);
-
-function setSelectionHighlight(obj) {
-  if (obj) {
-    selectionBox.setFromObject(obj);
-    selectionBox.visible = true;
-  } else {
-    selectionBox.visible = false;
-  }
-}
-
-// ─── Font ─────────────────────────────────────────────────────
 const fontLink = document.createElement("link");
 fontLink.rel = "stylesheet";
 fontLink.href =
@@ -1053,6 +932,7 @@ style.textContent = `
     --f-body:'DM Sans',sans-serif;--f-display:'Cormorant Garamond',serif;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+
   body{background:var(--page-bg);}
 
   /* ── Start screen ── */
@@ -1063,7 +943,6 @@ style.textContent = `
   @keyframes logoIn{from{opacity:0;transform:scale(0.88);}to{opacity:1;transform:scale(1);}}
   #btn-start-ar{margin-top:8px;padding:14px 44px;background:var(--teal);color:#fff;font-family:var(--f-body);font-size:14px;font-weight:600;letter-spacing:0.05em;border:none;border-radius:50px;cursor:pointer;box-shadow:0 8px 32px var(--teal-glow);transition:transform 0.15s;}
   #btn-start-ar:active{transform:scale(0.95);}
-  #btn-start-ar:disabled{opacity:0.6;cursor:not-allowed;}
 
   /* ── Top bar ── */
   #ui-top{position:fixed;top:0;left:0;right:0;height:62px;display:none;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(255,255,255,0.96);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);border-bottom:1px solid rgba(24,83,79,0.1);z-index:500;}
@@ -1074,15 +953,7 @@ style.textContent = `
   #btn-stop{padding:8px 18px;background:rgba(24,83,79,0.06);border:1px solid rgba(24,83,79,0.18);border-radius:50px;color:var(--teal);font-family:var(--f-body);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.15s;}
   #btn-stop:active{background:rgba(24,83,79,0.14);}
 
-  /* ── Tap hint overlay (replaces scan rings) ── */
-  #tap-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:none;z-index:300;opacity:0;transition:opacity 0.4s;}
-  #tap-hint.on{opacity:1;}
-  #tap-hint-ring{width:72px;height:72px;border-radius:50%;border:2px solid var(--teal);animation:tapPulse 1.8s ease-in-out infinite;}
-  #tap-hint-inner{width:20px;height:20px;border-radius:50%;background:var(--teal);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.7;}
-  #tap-hint-lbl{font-family:var(--f-body);font-size:12px;font-weight:600;color:#fff;background:var(--teal);padding:5px 16px;border-radius:50px;white-space:nowrap;}
-  @keyframes tapPulse{0%,100%{transform:scale(1);opacity:0.8;}50%{transform:scale(1.15);opacity:0.4;}}
-
-  /* ── Scan rings (kept for visual continuity) ── */
+  /* ── Scan rings ── */
   .s-ring{position:fixed;top:50%;left:50%;border:1.5px solid var(--teal);border-radius:50%;pointer-events:none;z-index:300;opacity:0;transition:opacity 0.4s;transform:translate(-50%,-56%);}
   .s-ring.on{animation:sPulse 2s ease-in-out infinite;}
   #sr1{width:160px;height:80px;}
@@ -1131,10 +1002,14 @@ style.textContent = `
   .a-btn:active{transform:scale(0.82);opacity:0.7;}
   #act-row-top{display:flex;align-items:center;justify-content:center;gap:12px;}
 
+
   #a-rot-l,#a-rot-r{width:64px;height:64px;border-radius:50%;background:#f0f4f3;border:1.5px solid rgba(24,83,79,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;flex-shrink:0;}
   .rot-lbl{font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:0.04em;color:rgba(24,83,79,0.6);text-transform:capitalize;}
   #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(24,83,79,0.1);border-color:var(--teal);}
   #a-rot-l.dim,#a-rot-r.dim{opacity:0.22;pointer-events:none;}
+
+
+  #a-undo{width:44px;height:44px;border-radius:50%;background:#f5f5f5;border:1px solid rgba(24,83,79,0.1);}
 
   #a-place{flex:1;height:58px;border-radius:50px;background:var(--teal);display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 22px var(--teal-glow);border:none;transition:transform 0.15s,box-shadow 0.15s;}
   #a-place:active{transform:scale(0.97);}
@@ -1144,35 +1019,32 @@ style.textContent = `
 
   #act-row-bot{display:flex;align-items:center;justify-content:center;gap:10px;}
 
+  /* Pills secondaires */
   .pill-btn{height:46px;border-radius:50px;padding:0 20px;background:#f5f8f7;border:1.5px solid rgba(24,83,79,0.12);display:flex;align-items:center;gap:8px;flex:1;justify-content:center;}
   .pill-btn span{font-family:var(--f-body);font-size:13px;font-weight:500;color:rgba(24,83,79,0.75);}
   .pill-btn:active{opacity:0.6;}
 
+  /* Delete pill — teinte rouge */
   .pill-danger{background:#fff0f0;border-color:rgba(217,95,95,0.2);}
   .pill-danger span{color:#D95F5F;}
   .pill-danger.dim{opacity:0.28;pointer-events:none;}
 
+
   #a-del-one{width:44px;height:44px;border-radius:50%;background:#fff0f0;border:1px solid rgba(217,95,95,0.22);}
   #a-del-one.dim{opacity:0.22;pointer-events:none;}
+
   #a-del{width:44px;height:44px;border-radius:50%;background:#f8f5f5;border:1px solid rgba(24,83,79,0.1);}
 
+  #ARButton{display:none!important;visibility:hidden!important;pointer-events:none!important;}
   @keyframes pop{from{transform:scale(0.82);}to{transform:scale(1);}}
 
   /* ── Rot label ── */
   #rot-label{position:fixed;bottom:195px;right:18px;font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff;background:var(--teal);backdrop-filter:var(--blur);padding:5px 14px;border-radius:50px;z-index:500;pointer-events:none;opacity:0;transition:opacity 0.2s;white-space:nowrap;}
   #rot-label.on{opacity:1;}
+
+  @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 `;
 document.head.appendChild(style);
-
-// ─── Start screen ─────────────────────────────────────────────
-const startScreen = document.createElement("div");
-startScreen.id = "start-screen";
-startScreen.innerHTML = `
-  <img id="start-logo" src="/ar_logo.png" alt="CasaDeco AR" />
-  <h1>CasaDeco AR</h1>
-  <p>Visualise furniture in your space</p>
-  <button id="btn-start-ar">Start AR Experience</button>`;
-document.body.appendChild(startScreen);
 
 // ─── Top bar ─────────────────────────────────────────────────
 const uiTop = document.createElement("div");
@@ -1180,12 +1052,11 @@ uiTop.id = "ui-top";
 uiTop.innerHTML = `
   <div id="top-left">
     <div id="top-name">CasaDeco</div>
-    <div id="top-status">Point camera at the floor</div>
+    <div id="top-status">Scanning…</div>
   </div>
   <button id="btn-stop">Stop AR</button>`;
 document.body.appendChild(uiTop);
 
-// ─── Scan rings ───────────────────────────────────────────────
 ["sr1", "sr2"].forEach((id) => {
   const el = document.createElement("div");
   el.id = id;
@@ -1193,25 +1064,13 @@ document.body.appendChild(uiTop);
   document.body.appendChild(el);
 });
 
-// ─── Tap hint overlay ─────────────────────────────────────────
-const tapHint = document.createElement("div");
-tapHint.id = "tap-hint";
-tapHint.innerHTML = `
-  <div style="position:relative;width:72px;height:72px;">
-    <div id="tap-hint-ring"></div>
-    <div id="tap-hint-inner"></div>
-  </div>
-  <div id="tap-hint-lbl">Tap floor to place</div>`;
-document.body.appendChild(tapHint);
-
-// ─── Hint pill ────────────────────────────────────────────────
 const hintPill = document.createElement("div");
 hintPill.id = "hint-pill";
 document.body.appendChild(hintPill);
 
 const moveBanner = document.createElement("div");
 moveBanner.id = "move-banner";
-moveBanner.textContent = "Tap the floor to move · tap ✓ to lock";
+moveBanner.textContent = "Move phone · tap ✓ to lock position";
 document.body.appendChild(moveBanner);
 
 const rotLabel = document.createElement("div");
@@ -1222,20 +1081,24 @@ document.body.appendChild(rotLabel);
 const uiBottom = document.createElement("div");
 uiBottom.id = "ui-bottom";
 uiBottom.innerHTML = `
+  <!-- Tap anywhere on this strip to toggle the panel -->
   <div id="panel-toggle">
     <div id="panel-toggle-inner">
       <div id="drag-handle"></div>
       <div id="toggle-chevron"></div>
     </div>
   </div>
+
+  <!-- Everything below here is hidden when collapsed -->
   <div id="panel-content">
     <div style="padding-top:4px">
       <div class="sec-label">Products</div>
       <div id="chip-rail"></div>
     </div>
     <div id="act-row">
+      <!-- Rangée 1 : Rotate gauche + Place + Rotate droite -->
       <div id="act-row-top">
-        <button class="a-btn dim" id="a-rot-l" title="Rotate left">
+        <button class="a-btn" id="a-rot-l" title="Rotate left">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#18534F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2.5 12a9.5 9.5 0 1 1 1.8 5.6"/><polyline points="2 17 2.5 12 7.5 13.5"/>
           </svg>
@@ -1256,7 +1119,7 @@ uiBottom.innerHTML = `
           <span id="place-lbl">PLACE FURNITURE</span>
         </button>
 
-        <button class="a-btn dim" id="a-rot-r" title="Rotate right">
+        <button class="a-btn" id="a-rot-r" title="Rotate right">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#18534F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.5 12a9.5 9.5 0 1 0-1.8 5.6"/><polyline points="22 17 21.5 12 16.5 13.5"/>
           </svg>
@@ -1264,6 +1127,7 @@ uiBottom.innerHTML = `
         </button>
       </div>
 
+      <!-- Rangée 2 : Undo + Delete selected + Clear all -->
       <div id="act-row-bot">
         <button class="a-btn pill-btn" id="a-undo">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(24,83,79,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1289,11 +1153,13 @@ uiBottom.innerHTML = `
         </button>
       </div>
     </div>
-  </div>`;
+  </div>
+`;
 document.body.appendChild(uiBottom);
 
-// ─── Panel toggle ─────────────────────────────────────────────
+// ─── Panel toggle logic ───────────────────────────────────────
 let panelCollapsed = false;
+
 document.getElementById("panel-toggle").addEventListener("click", () => {
   panelCollapsed = !panelCollapsed;
   uiBottom.classList.toggle("collapsed", panelCollapsed);
@@ -1314,6 +1180,34 @@ const icoCheck = document.getElementById("ico-check-svg");
 const icoMove = document.getElementById("ico-move-svg");
 const sr1 = document.getElementById("sr1");
 const sr2 = document.getElementById("sr2");
+
+// ─── Reticle ─────────────────────────────────────────────────
+const reticle = new THREE.Mesh(
+  new THREE.RingGeometry(0.1, 0.14, 32).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({
+    color: 0x18534f,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.85,
+  }),
+);
+
+const selectionBox = new THREE.BoxHelper(new THREE.Object3D(), 0x18534f);
+selectionBox.visible = false;
+scene.add(selectionBox);
+
+function setSelectionHighlight(obj) {
+  if (obj) {
+    selectionBox.setFromObject(obj);
+    selectionBox.visible = true;
+  } else {
+    selectionBox.visible = false;
+  }
+}
+
+reticle.matrixAutoUpdate = false;
+reticle.visible = false;
+scene.add(reticle);
 
 // ─── Products ────────────────────────────────────────────────
 const urlParams = new URLSearchParams(window.location.search);
@@ -1383,6 +1277,10 @@ if (initialModelUrl) {
 }
 
 // ─── State ───────────────────────────────────────────────────
+let hitTestSource = null,
+  hitTestSourceRequested = false;
+const floorPos = new THREE.Vector3();
+let floorFound = false;
 let appMode = "idle";
 let previewObj = null,
   selectedObj = null;
@@ -1390,8 +1288,10 @@ const placedList = [];
 let gltfScene = null,
   modelScale = 1,
   modelLift = 0;
+
 const userRotations = new WeakMap();
 const frozenRotations = new WeakMap();
+
 const ROT_STEP = Math.PI / 12;
 const ROT_SPEED = Math.PI / 60;
 let rotInterval = null;
@@ -1401,10 +1301,8 @@ function faceCameraY(objPos, camPos) {
   return Math.atan2(camPos.x - objPos.x, camPos.z - objPos.z);
 }
 
-function positionObject(obj) {
+function positionObject(obj, camPos) {
   obj.position.set(floorPos.x, floorPos.y + modelLift, floorPos.z);
-  const camPos = new THREE.Vector3();
-  camera.getWorldPosition(camPos);
   const baseAngle = faceCameraY(obj.position, camPos);
   const userDelta = userRotations.get(obj) ?? 0;
   obj.rotation.set(0, baseAngle + userDelta, 0);
@@ -1428,10 +1326,11 @@ function updateRotUI() {
   }
   aRotL.classList.remove("dim");
   aRotR.classList.remove("dim");
+  // activer le bouton "supprimer" seulement si on est en mode sélection
   if (appMode === "selected") {
-    aDelOne.classList.remove("dim");
+    aDelOne.classList.remove("dim"); // ← nouveau
   } else {
-    aDelOne.classList.add("dim");
+    aDelOne.classList.add("dim"); // ← nouveau
   }
   const deg = Math.round(
     (((userRotations.get(target) ?? 0) * 180) / Math.PI + 3600) % 360,
@@ -1488,10 +1387,13 @@ function setPlaceIcon(s) {
   icoAim.style.display = s === "aim" ? "" : "none";
   icoCheck.style.display = s === "check" ? "" : "none";
   icoMove.style.display = s === "move" ? "" : "none";
+
+  // labels selon état
   const lbl = document.getElementById("place-lbl");
   if (s === "aim") lbl.textContent = "PLACE FURNITURE";
   if (s === "check") lbl.textContent = "CONFIRM POSITION";
   if (s === "move") lbl.textContent = "LOCK POSITION";
+
   aPlace.classList.remove("s-move", "s-ok");
   if (s === "move") aPlace.classList.add("s-move");
   if (s === "check") aPlace.classList.add("s-ok");
@@ -1503,9 +1405,6 @@ function setHint(txt) {
 function setScan(on) {
   sr1.classList.toggle("on", on);
   sr2.classList.toggle("on", on);
-}
-function setTapHint(on) {
-  tapHint.classList.toggle("on", on);
 }
 
 // ─── Chip rail ────────────────────────────────────────────────
@@ -1555,13 +1454,14 @@ function loadModel(url) {
     scene.remove(previewObj);
     previewObj = null;
   }
+
   selectedObj = null;
   setSelectionHighlight(null);
+
   gltfScene = null;
   appMode = "idle";
   topStatus.textContent = "Loading…";
   setHint(null);
-  setTapHint(false);
   updateRotUI();
 
   new GLTFLoader().load(
@@ -1598,18 +1498,18 @@ function startPreview() {
   userRotations.set(g, 0);
   appMode = "previewing";
   setPlaceIcon("aim");
-  setTapHint(true);
-  topStatus.textContent = "Tap floor to place";
+  setScan(true);
+  topStatus.textContent = "Scanning surface…";
   setHint(null);
   moveBanner.style.display = "none";
   updateRotUI();
+  // auto-expand panel when a new model is loaded
   if (panelCollapsed) {
     panelCollapsed = false;
     uiBottom.classList.remove("collapsed");
   }
 }
 
-// ─── doConfirm ────────────────────────────────────────────────
 function doConfirm() {
   if (appMode === "previewing" && previewObj && floorFound) {
     frozenRotations.set(previewObj, previewObj.rotation.y);
@@ -1617,17 +1517,17 @@ function doConfirm() {
     previewObj = null;
     appMode = "idle";
     setSelectionHighlight(null);
-    setTapHint(false);
     moveBanner.style.display = "none";
     setPlaceIcon("check");
     topStatus.textContent = "Placed!";
-    setHint("Tap ↺ to undo · hold ⟳ to rotate · tap item to move");
+    setHint("Tap ↺ to undo · hold ⟳ to rotate · tap ✦ to move");
     updateRotUI();
     setTimeout(() => {
       setPlaceIcon("aim");
       setHint(null);
       topStatus.textContent = "Tap a product to place another";
-    }, 2500);
+      setScan(false);
+    }, 2000);
   } else if (appMode === "selected" && selectedObj && floorFound) {
     frozenRotations.set(selectedObj, selectedObj.rotation.y);
     selectedObj = null;
@@ -1644,236 +1544,188 @@ function doConfirm() {
   }
 }
 
-// ─── isUIElement — prevents floor taps firing on UI ──────────
-function isUIElement(target) {
-  return target.closest("#ui-bottom") || target.closest("#ui-top");
-}
-
-// ─── Tap handler (replaces WebXR "select") ───────────────────
-function handleTap(clientX, clientY, targetEl) {
-  if (targetEl && isUIElement(targetEl)) return;
-
-  if (appMode === "previewing") {
-    const hit = screenToFloor(clientX, clientY);
-    if (hit) {
-      floorPos.copy(hit);
-      floorFound = true;
-      previewObj.visible = true;
-      positionObject(previewObj);
-      setTapHint(false);
-      doConfirm();
-    }
-    return;
-  }
-
-  if (appMode === "selected") {
-    const hit = screenToFloor(clientX, clientY);
-    if (hit) {
-      floorPos.copy(hit);
-      floorFound = true;
-      positionObject(selectedObj);
-      setSelectionHighlight(selectedObj);
-      // Freeze new position immediately
-      frozenRotations.set(selectedObj, selectedObj.rotation.y);
-    }
-    return;
-  }
-
-  // idle — try to select a placed object
-  if (appMode === "idle" && placedList.length > 0) {
-    const hits = raycastPlacedObjects(clientX, clientY);
-    if (hits.length > 0) {
-      const hitMesh = hits[0].object;
-      const hitObj = placedList.find((obj) => {
-        let found = false;
-        obj.traverse((c) => {
-          if (c === hitMesh) found = true;
-        });
-        return found;
-      });
-      if (hitObj) {
-        selectedObj = hitObj;
-        appMode = "selected";
-        setSelectionHighlight(hitObj);
-        moveBanner.style.display = "block";
-        setPlaceIcon("move");
-        topStatus.textContent = "Tap floor to move · tap ✓ to lock";
-        updateRotUI();
-      }
-    }
-  }
-}
-
-// ─── Register tap listeners on the renderer canvas ───────────
-renderer.domElement.addEventListener("click", (e) => {
-  handleTap(e.clientX, e.clientY, e.target);
-});
-renderer.domElement.addEventListener(
-  "touchend",
-  (e) => {
-    e.preventDefault();
-    const t = e.changedTouches[0];
-    handleTap(
-      t.clientX,
-      t.clientY,
-      document.elementFromPoint(t.clientX, t.clientY),
-    );
-  },
-  { passive: false },
-);
-
-// ─── Button listeners ─────────────────────────────────────────
-aPlace.addEventListener("click", () => {
-  if (appMode === "previewing" || appMode === "selected") {
-    doConfirm();
-  } else if (appMode === "idle" && placedList.length > 0) {
-    selectedObj = placedList[placedList.length - 1];
-    appMode = "selected";
-    setSelectionHighlight(selectedObj);
-    moveBanner.style.display = "block";
-    setPlaceIcon("move");
-    topStatus.textContent = "Tap floor to move · tap ✓ to lock";
-    updateRotUI();
-  }
-});
-
-aUndo.addEventListener("click", () => {
-  stopSpin();
-  if (appMode === "selected" && selectedObj) {
-    const i = placedList.indexOf(selectedObj);
-    if (i !== -1) placedList.splice(i, 1);
-    scene.remove(selectedObj);
-    selectedObj = null;
-    appMode = "idle";
-    setSelectionHighlight(null);
-    moveBanner.style.display = "none";
-    setPlaceIcon("aim");
-    setHint(null);
-    topStatus.textContent = "Removed";
-    updateRotUI();
-    setTimeout(() => (topStatus.textContent = "Ready"), 1200);
-  } else if (placedList.length > 0) {
-    scene.remove(placedList.pop());
-    topStatus.textContent = "Removed";
-    setTimeout(() => (topStatus.textContent = "Ready"), 1200);
-  }
-  if (previewObj) {
-    scene.remove(previewObj);
-    previewObj = null;
-    appMode = "idle";
-    setTapHint(false);
-    updateRotUI();
-  }
-});
-
-aDel.addEventListener("click", () => {
-  stopSpin();
-  placedList.forEach((o) => scene.remove(o));
-  placedList.length = 0;
-  if (previewObj) {
-    scene.remove(previewObj);
-    previewObj = null;
-  }
-  selectedObj = null;
-  appMode = "idle";
-  setSelectionHighlight(null);
-  moveBanner.style.display = "none";
-  setPlaceIcon("aim");
-  setHint(null);
-  setTapHint(false);
-  topStatus.textContent = "Cleared";
-  updateRotUI();
-  setTimeout(() => (topStatus.textContent = "Tap a product to place"), 1200);
-});
-
-aDelOne.addEventListener("click", (e) => {
-  e.stopPropagation();
-  stopSpin();
-  if (appMode === "selected" && selectedObj) {
-    const i = placedList.indexOf(selectedObj);
-    if (i !== -1) placedList.splice(i, 1);
-    scene.remove(selectedObj);
-    selectedObj = null;
-    appMode = "idle";
-    setSelectionHighlight(null);
-    moveBanner.style.display = "none";
-    setPlaceIcon("aim");
-    setHint(null);
-    topStatus.textContent = "Deleted";
-    updateRotUI();
-    setTimeout(() => (topStatus.textContent = "Ready"), 1200);
-  }
-});
-
-// ─── Start AR immediately (no MindAR.start() needed) ─────────
-document.getElementById("btn-start-ar").addEventListener("click", async () => {
-  const btn = document.getElementById("btn-start-ar");
-  btn.disabled = true;
-  btn.textContent = "Starting…";
-
-  // Start camera feed here — avoids top-level await and ensures
-  // the permission prompt fires after a user gesture (required on Android)
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "environment",
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-      audio: false,
-    });
-    video.srcObject = stream;
-  } catch (err) {
-    console.error("Camera error:", err);
-    // Continue even without camera — Three.js canvas still works
-  }
-
+// ─── XR session ───────────────────────────────────────────────
+renderer.xr.addEventListener("sessionstart", () => {
+  const arBtnEl = document.getElementById("ARButton");
+  if (arBtnEl) arBtnEl.remove();
   startScreen.style.display = "none";
   uiTop.classList.add("on");
   uiBottom.classList.add("on");
+  // always start expanded
   panelCollapsed = false;
   uiBottom.classList.remove("collapsed");
-
   buildRail();
   loadModel(products.find((p) => p.id === activeProductId).url);
 
-  renderer.setAnimationLoop(() => {
-    if (appMode === "selected" && selectedObj) {
-      setSelectionHighlight(selectedObj);
+  const session = renderer.xr.getSession();
+  const raycaster = new THREE.Raycaster();
+  let domTapped = false;
+  document.getElementById("ui-bottom").addEventListener(
+    "pointerdown",
+    () => {
+      domTapped = true;
+      setTimeout(() => {
+        domTapped = false;
+      }, 400);
+    },
+    { passive: true },
+  );
+  document.getElementById("ui-top").addEventListener(
+    "pointerdown",
+    () => {
+      domTapped = true;
+      setTimeout(() => {
+        domTapped = false;
+      }, 400);
+    },
+    { passive: true },
+  );
+
+  session.addEventListener("select", () => {
+    if (domTapped) return;
+    if (appMode === "previewing") {
+      doConfirm();
+      return;
     }
-    placedList.forEach((obj) => {
-      if (obj !== selectedObj) {
-        obj.rotation.y = frozenRotations.get(obj) ?? 0;
+    if (appMode === "selected") {
+      doConfirm();
+      return;
+    }
+    if (appMode === "idle" && placedList.length > 0) {
+      const xrCamera = renderer.xr.getCamera();
+      raycaster.setFromCamera({ x: 0, y: 0 }, xrCamera);
+      const targets = [];
+      placedList.forEach((obj) =>
+        obj.traverse((child) => {
+          if (child.isMesh) targets.push(child);
+        }),
+      );
+      const hits = raycaster.intersectObjects(targets, false);
+      if (hits.length > 0) {
+        const hitMesh = hits[0].object;
+        const hitObj = placedList.find((obj) => {
+          let f = false;
+          obj.traverse((c) => {
+            if (c === hitMesh) f = true;
+          });
+          return f;
+        });
+        if (hitObj) {
+          selectedObj = hitObj;
+          appMode = "selected";
+          setSelectionHighlight(hitObj);
+          moveBanner.style.display = "block";
+          setPlaceIcon("move");
+          topStatus.textContent = "Moving item";
+          updateRotUI();
+        }
       }
-    });
-    renderer.render(scene, camera);
+    }
+  });
+
+  aPlace.addEventListener("click", () => {
+    if (appMode === "previewing" || appMode === "selected") {
+      doConfirm();
+    } else if (appMode === "idle" && placedList.length > 0) {
+      selectedObj = placedList[placedList.length - 1];
+      appMode = "selected";
+      setSelectionHighlight(selectedObj);
+      moveBanner.style.display = "block";
+      setPlaceIcon("move");
+      topStatus.textContent = "Moving item";
+      updateRotUI();
+    }
+  });
+
+  aUndo.addEventListener("click", () => {
+    stopSpin();
+    if (appMode === "selected" && selectedObj) {
+      const i = placedList.indexOf(selectedObj);
+      if (i !== -1) placedList.splice(i, 1);
+      scene.remove(selectedObj);
+      selectedObj = null;
+      appMode = "idle";
+      moveBanner.style.display = "none";
+      setPlaceIcon("aim");
+      setHint(null);
+      topStatus.textContent = "Removed";
+      updateRotUI();
+      setTimeout(() => (topStatus.textContent = "Ready"), 1200);
+    } else if (placedList.length > 0) {
+      scene.remove(placedList.pop());
+      topStatus.textContent = "Removed";
+      setTimeout(() => (topStatus.textContent = "Ready"), 1200);
+    }
+    if (previewObj) {
+      scene.remove(previewObj);
+      previewObj = null;
+      appMode = "idle";
+      setScan(false);
+      updateRotUI();
+    }
+  });
+
+  aDel.addEventListener("click", () => {
+    stopSpin();
+    placedList.forEach((o) => scene.remove(o));
+    placedList.length = 0;
+    if (previewObj) {
+      scene.remove(previewObj);
+      previewObj = null;
+    }
+    selectedObj = null;
+    appMode = "idle";
+    moveBanner.style.display = "none";
+    setPlaceIcon("aim");
+    setHint(null);
+    setScan(false);
+    topStatus.textContent = "Cleared";
+    updateRotUI();
+    setTimeout(() => (topStatus.textContent = "Tap a product to place"), 1200);
+  });
+
+  aDelOne.addEventListener("click", (e) => {
+    e.stopPropagation();
+    stopSpin();
+    const objToDelete = selectedObj;
+    if (appMode === "selected" && selectedObj) {
+      const i = placedList.indexOf(selectedObj);
+      if (i !== -1) placedList.splice(i, 1);
+      scene.remove(selectedObj);
+      selectedObj = null;
+      appMode = "idle";
+      setSelectionHighlight(null);
+      moveBanner.style.display = "none";
+      setPlaceIcon("aim");
+      setHint(null);
+      topStatus.textContent = "Élément supprimé";
+      updateRotUI();
+      setTimeout(() => (topStatus.textContent = "Prêt"), 1200);
+    }
+  });
+
+  btnStop.addEventListener("click", () => {
+    stopSpin();
+    session.end();
+  });
+
+  session.addEventListener("end", () => {
+    stopSpin();
+    uiTop.classList.remove("on");
+    uiBottom.classList.remove("on");
+    panelCollapsed = false;
+    setScan(false);
+    moveBanner.style.display = "none";
+    rotLabel.classList.remove("on");
+    setHint(null);
+    startScreen.style.display = "flex";
+    hitTestSource = null;
+    hitTestSourceRequested = false;
+    floorFound = false;
   });
 });
 
-// ─── Stop AR ─────────────────────────────────────────────────
-btnStop.addEventListener("click", () => {
-  stopSpin();
-  renderer.setAnimationLoop(null);
-
-  // Stop camera
-  if (video.srcObject) {
-    video.srcObject.getTracks().forEach((t) => t.stop());
-    video.srcObject = null;
-  }
-
-  uiTop.classList.remove("on");
-  uiBottom.classList.remove("on");
-  panelCollapsed = false;
-  setTapHint(false);
-  setScan(false);
-  moveBanner.style.display = "none";
-  rotLabel.classList.remove("on");
-  setHint(null);
-  floorFound = false;
-  startScreen.style.display = "flex";
-});
-
-// ─── Flutter bridge ───────────────────────────────────────────
+// Flutter bridge
 window.setModel = (url) => {
   const p = products.find((x) => x.url === url);
   if (p) {
@@ -1885,7 +1737,65 @@ window.setModel = (url) => {
 window.removeLastObject = () => aUndo.click();
 window.clearAll = () => aDel.click();
 
-// ─── Resize ───────────────────────────────────────────────────
+// ─── Render loop ─────────────────────────────────────────────
+renderer.setAnimationLoop((_, frame) => {
+  if (frame) {
+    const refSpace = renderer.xr.getReferenceSpace();
+    const session = renderer.xr.getSession();
+
+    if (!hitTestSourceRequested) {
+      session.requestReferenceSpace("viewer").then((vs) => {
+        session.requestHitTestSource({ space: vs }).then((src) => {
+          hitTestSource = src;
+        });
+      });
+      hitTestSourceRequested = true;
+    }
+
+    if (hitTestSource) {
+      const hits = frame.getHitTestResults(hitTestSource);
+
+      if (hits.length > 0) {
+        const m = hits[0].getPose(refSpace).transform.matrix;
+        reticle.visible = true;
+        reticle.matrix.fromArray(m);
+        floorPos.set(m[12], m[13], m[14]);
+        floorFound = true;
+
+        const camPos = new THREE.Vector3();
+        renderer.xr.getCamera().getWorldPosition(camPos);
+
+        if (appMode === "previewing" && previewObj) {
+          previewObj.visible = true;
+          positionObject(previewObj, camPos);
+          setScan(false);
+          topStatus.textContent = "Tap ✓ to place";
+        }
+
+        if (appMode === "selected" && selectedObj) {
+          positionObject(selectedObj, camPos);
+          setSelectionHighlight(selectedObj);
+        }
+      } else {
+        reticle.visible = false;
+        floorFound = false;
+        if (appMode === "previewing") {
+          setScan(true);
+          topStatus.textContent = "Scanning surface…";
+        }
+      }
+
+      placedList.forEach((obj) => {
+        if (obj !== selectedObj) {
+          obj.rotation.y = frozenRotations.get(obj) ?? 0;
+        }
+      });
+    }
+  }
+
+  renderer.render(scene, camera);
+});
+
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
