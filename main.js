@@ -946,17 +946,8 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-// ─── Camera feed setup ────────────────────────────────────────
+// ─── Camera element (stream started on button click) ─────────
 const video = document.getElementById("video-bg");
-try {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment", width: 1280, height: 720 },
-    audio: false,
-  });
-  video.srcObject = stream;
-} catch (err) {
-  console.error("Camera error:", err);
-}
 
 // ─── Three.js renderer on top of video ───────────────────────
 const canvas = document.getElementById("ar-canvas");
@@ -1815,7 +1806,28 @@ aDelOne.addEventListener("click", (e) => {
 });
 
 // ─── Start AR immediately (no MindAR.start() needed) ─────────
-document.getElementById("btn-start-ar").addEventListener("click", () => {
+document.getElementById("btn-start-ar").addEventListener("click", async () => {
+  const btn = document.getElementById("btn-start-ar");
+  btn.disabled = true;
+  btn.textContent = "Starting…";
+
+  // Start camera feed here — avoids top-level await and ensures
+  // the permission prompt fires after a user gesture (required on Android)
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "environment",
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false,
+    });
+    video.srcObject = stream;
+  } catch (err) {
+    console.error("Camera error:", err);
+    // Continue even without camera — Three.js canvas still works
+  }
+
   startScreen.style.display = "none";
   uiTop.classList.add("on");
   uiBottom.classList.add("on");
