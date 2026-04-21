@@ -941,9 +941,7 @@
 //   camera.updateProjectionMatrix();
 //   renderer.setSize(window.innerWidth, window.innerHeight);
 // });
-const { MindARThree } = window.MINDAR.WORLD;
-const THREE = window.THREE;
-const GLTFLoader = window.THREE.GLTFLoader || window.GLTFLoader;
+
 // ─── Globals from CDN scripts (no imports needed) ────────────
 const { MindARThree } = window.MINDAR.WORLD;
 const THREE = window.THREE;
