@@ -1054,6 +1054,13 @@ style.textContent = `
   /* ── Move banner ── */
   #move-banner{position:fixed;bottom:230px;left:50%;transform:translateX(-50%);font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#fff;background:var(--teal);padding:7px 22px;border-radius:50px;z-index:500;pointer-events:none;display:none;white-space:nowrap;box-shadow:0 4px 20px var(--teal-glow);}
 
+  /* ── Surface label ── */
+  #surface-label{position:fixed;top:calc(50% + 46px);left:50%;transform:translateX(-50%);z-index:400;padding:3px 12px;border-radius:12px;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;pointer-events:none;opacity:0;transition:all 0.3s;white-space:nowrap;}
+  #surface-label.visible{opacity:1;}
+  #surface-label.floor{background:rgba(82,180,107,0.25);color:#52B46B;border:1px solid rgba(82,180,107,0.4);}
+  #surface-label.wall{background:rgba(40,79,117,0.25);color:#6fa3d8;border:1px solid rgba(40,79,117,0.4);}
+  #surface-label.ceiling{background:rgba(245,144,100,0.25);color:#F59064;border:1px solid rgba(245,144,100,0.4);}
+
   /* ── Bottom panel ── */
   #ui-bottom{position:fixed;bottom:0;left:0;right:0;display:none;flex-direction:column;gap:10px;background:#fff;border-top:1px solid rgba(24,83,79,0.09);border-radius:22px 22px 0 0;padding:0 20px 44px;z-index:500;transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);transform:translateY(0);}
   #ui-bottom.on{display:flex;}
@@ -1088,12 +1095,10 @@ style.textContent = `
   .a-btn:active{transform:scale(0.82);opacity:0.7;}
   #act-row-top{display:flex;align-items:center;justify-content:center;gap:12px;}
 
-
   #a-rot-l,#a-rot-r{width:64px;height:64px;border-radius:50%;background:#f0f4f3;border:1.5px solid rgba(24,83,79,0.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:background 0.15s,border-color 0.15s,transform 0.12s,opacity 0.12s;flex-shrink:0;}
   .rot-lbl{font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:0.04em;color:rgba(24,83,79,0.6);text-transform:capitalize;}
   #a-rot-l.spinning,#a-rot-r.spinning{background:rgba(24,83,79,0.1);border-color:var(--teal);}
   #a-rot-l.dim,#a-rot-r.dim{opacity:0.22;pointer-events:none;}
-
 
   #a-undo{width:44px;height:44px;border-radius:50%;background:#f5f5f5;border:1px solid rgba(24,83,79,0.1);}
 
@@ -1105,16 +1110,13 @@ style.textContent = `
 
   #act-row-bot{display:flex;align-items:center;justify-content:center;gap:10px;}
 
-  /* Pills secondaires */
   .pill-btn{height:46px;border-radius:50px;padding:0 20px;background:#f5f8f7;border:1.5px solid rgba(24,83,79,0.12);display:flex;align-items:center;gap:8px;flex:1;justify-content:center;}
   .pill-btn span{font-family:var(--f-body);font-size:13px;font-weight:500;color:rgba(24,83,79,0.75);}
   .pill-btn:active{opacity:0.6;}
 
-  /* Delete pill — teinte rouge */
   .pill-danger{background:#fff0f0;border-color:rgba(217,95,95,0.2);}
   .pill-danger span{color:#D95F5F;}
   .pill-danger.dim{opacity:0.28;pointer-events:none;}
-
 
   #a-del-one{width:44px;height:44px;border-radius:50%;background:#fff0f0;border:1px solid rgba(217,95,95,0.22);}
   #a-del-one.dim{opacity:0.22;pointer-events:none;}
@@ -1163,11 +1165,15 @@ const rotLabel = document.createElement("div");
 rotLabel.id = "rot-label";
 document.body.appendChild(rotLabel);
 
+// ─── Surface label (wall detection UI) ───────────────────────
+const surfaceLabel = document.createElement("div");
+surfaceLabel.id = "surface-label";
+document.body.appendChild(surfaceLabel);
+
 // ─── Bottom bar ───────────────────────────────────────────────
 const uiBottom = document.createElement("div");
 uiBottom.id = "ui-bottom";
 uiBottom.innerHTML = `
-  <!-- Tap anywhere on this strip to toggle the panel -->
   <div id="panel-toggle">
     <div id="panel-toggle-inner">
       <div id="drag-handle"></div>
@@ -1175,14 +1181,12 @@ uiBottom.innerHTML = `
     </div>
   </div>
 
-  <!-- Everything below here is hidden when collapsed -->
   <div id="panel-content">
     <div style="padding-top:4px">
       <div class="sec-label">Products</div>
       <div id="chip-rail"></div>
     </div>
     <div id="act-row">
-      <!-- Rangée 1 : Rotate gauche + Place + Rotate droite -->
       <div id="act-row-top">
         <button class="a-btn" id="a-rot-l" title="Rotate left">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#18534F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1213,7 +1217,6 @@ uiBottom.innerHTML = `
         </button>
       </div>
 
-      <!-- Rangée 2 : Undo + Delete selected + Clear all -->
       <div id="act-row-bot">
         <button class="a-btn pill-btn" id="a-undo">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(24,83,79,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1266,12 +1269,6 @@ const icoCheck = document.getElementById("ico-check-svg");
 const icoMove = document.getElementById("ico-move-svg");
 const sr1 = document.getElementById("sr1");
 const sr2 = document.getElementById("sr2");
-
-function isVerticalSurface(matrix) {
-  // matrix[5] is the Y component of the surface normal
-  // Near 0 = vertical (wall), near 1 = horizontal (floor)
-  return Math.abs(matrix[5]) < 0.3;
-}
 
 // ─── Reticle ─────────────────────────────────────────────────
 const reticle = new THREE.Mesh(
@@ -1369,10 +1366,8 @@ if (initialModelUrl) {
 }
 
 // ─── State ───────────────────────────────────────────────────
-let hitTestSource = null;
-let hitTestSourceWall = null;
-let hitTestSourceRequested = false;
-
+let hitTestSource = null,
+  hitTestSourceRequested = false;
 const floorPos = new THREE.Vector3();
 let floorFound = false;
 let appMode = "idle";
@@ -1389,6 +1384,31 @@ const frozenRotations = new WeakMap();
 const ROT_STEP = Math.PI / 12;
 const ROT_SPEED = Math.PI / 60;
 let rotInterval = null;
+
+// ─── Wall Detection State ─────────────────────────────────────
+let currentSurfaceType = "floor"; // "floor" | "wall" | "ceiling"
+
+// ─── Wall Detection: surface type from hit matrix ─────────────
+function getSurfaceTypeFromMatrix(matrix) {
+  // matrix[5] = Y component of the surface normal (column-major)
+  // Near  1 = horizontal facing up   → floor
+  // Near -1 = horizontal facing down → ceiling
+  // Near  0 = vertical               → wall
+  const normalY = matrix[5];
+  if (Math.abs(normalY) > 0.7) return normalY > 0 ? "floor" : "ceiling";
+  return "wall";
+}
+
+// ─── Wall Detection: update UI when surface type changes ───────
+function updateSurfaceUI(type) {
+  const labels = { floor: "Floor", wall: "Wall", ceiling: "Ceiling" };
+  surfaceLabel.textContent = labels[type] || "Floor";
+  surfaceLabel.className = "visible " + type;
+
+  // Change reticle color to match detected surface
+  const colors = { floor: 0x18534f, wall: 0x6fa3d8, ceiling: 0xf59064 };
+  reticle.material.color.set(colors[type] || 0x18534f);
+}
 
 // ─── Positioning ─────────────────────────────────────────────
 function faceCameraY(objPos, camPos) {
@@ -1420,11 +1440,10 @@ function updateRotUI() {
   }
   aRotL.classList.remove("dim");
   aRotR.classList.remove("dim");
-  // activer le bouton "supprimer" seulement si on est en mode sélection
   if (appMode === "selected") {
-    aDelOne.classList.remove("dim"); // ← nouveau
+    aDelOne.classList.remove("dim");
   } else {
-    aDelOne.classList.add("dim"); // ← nouveau
+    aDelOne.classList.add("dim");
   }
   const deg = Math.round(
     (((userRotations.get(target) ?? 0) * 180) / Math.PI + 3600) % 360,
@@ -1482,7 +1501,6 @@ function setPlaceIcon(s) {
   icoCheck.style.display = s === "check" ? "" : "none";
   icoMove.style.display = s === "move" ? "" : "none";
 
-  // labels selon état
   const lbl = document.getElementById("place-lbl");
   if (s === "aim") lbl.textContent = "PLACE FURNITURE";
   if (s === "check") lbl.textContent = "CONFIRM POSITION";
@@ -1548,10 +1566,8 @@ function loadModel(url) {
     scene.remove(previewObj);
     previewObj = null;
   }
-
   selectedObj = null;
   setSelectionHighlight(null);
-
   gltfScene = null;
   appMode = "idle";
   topStatus.textContent = "Loading…";
@@ -1597,7 +1613,6 @@ function startPreview() {
   setHint(null);
   moveBanner.style.display = "none";
   updateRotUI();
-  // auto-expand panel when a new model is loaded
   if (panelCollapsed) {
     panelCollapsed = false;
     uiBottom.classList.remove("collapsed");
@@ -1645,7 +1660,6 @@ renderer.xr.addEventListener("sessionstart", () => {
   startScreen.style.display = "none";
   uiTop.classList.add("on");
   uiBottom.classList.add("on");
-  // always start expanded
   panelCollapsed = false;
   uiBottom.classList.remove("collapsed");
   buildRail();
@@ -1781,7 +1795,6 @@ renderer.xr.addEventListener("sessionstart", () => {
   aDelOne.addEventListener("click", (e) => {
     e.stopPropagation();
     stopSpin();
-    const objToDelete = selectedObj;
     if (appMode === "selected" && selectedObj) {
       const i = placedList.indexOf(selectedObj);
       if (i !== -1) placedList.splice(i, 1);
@@ -1792,9 +1805,9 @@ renderer.xr.addEventListener("sessionstart", () => {
       moveBanner.style.display = "none";
       setPlaceIcon("aim");
       setHint(null);
-      topStatus.textContent = "Élément supprimé";
+      topStatus.textContent = "Removed";
       updateRotUI();
-      setTimeout(() => (topStatus.textContent = "Prêt"), 1200);
+      setTimeout(() => (topStatus.textContent = "Ready"), 1200);
     }
   });
 
@@ -1814,9 +1827,11 @@ renderer.xr.addEventListener("sessionstart", () => {
     setHint(null);
     startScreen.style.display = "flex";
     hitTestSource = null;
-    hitTestSourceWall = null;
     hitTestSourceRequested = false;
     floorFound = false;
+    // ── Reset surface label ──
+    surfaceLabel.className = "";
+    currentSurfaceType = "floor";
   });
 });
 
@@ -1840,26 +1855,13 @@ renderer.setAnimationLoop((_, frame) => {
 
     if (!hitTestSourceRequested) {
       session.requestReferenceSpace("viewer").then((vs) => {
-        // Floor — ray pointing down
         session
           .requestHitTestSource({
             space: vs,
-            entityTypes: ["plane"],
-            offsetRay: new XRRay({ y: 0, z: -1 }, { y: -1, z: 0 }),
+            entityTypes: ["plane", "point", "mesh"], // ← detects walls + floor + ceiling
           })
           .then((src) => {
             hitTestSource = src;
-          });
-
-        // Wall — ray pointing forward
-        session
-          .requestHitTestSource({
-            space: vs,
-            entityTypes: ["plane"],
-            offsetRay: new XRRay(),
-          })
-          .then((src) => {
-            hitTestSourceWall = src;
           });
       });
       hitTestSourceRequested = true;
@@ -1874,6 +1876,13 @@ renderer.setAnimationLoop((_, frame) => {
         reticle.matrix.fromArray(m);
         floorPos.set(m[12], m[13], m[14]);
         floorFound = true;
+
+        // ── Detect surface type and update UI ──
+        const detectedSurface = getSurfaceTypeFromMatrix(m);
+        if (detectedSurface !== currentSurfaceType) {
+          currentSurfaceType = detectedSurface;
+          updateSurfaceUI(detectedSurface);
+        }
 
         const camPos = new THREE.Vector3();
         renderer.xr.getCamera().getWorldPosition(camPos);
@@ -1892,6 +1901,7 @@ renderer.setAnimationLoop((_, frame) => {
       } else {
         reticle.visible = false;
         floorFound = false;
+        surfaceLabel.className = ""; // ← hide label when no surface detected
         if (appMode === "previewing") {
           setScan(true);
           topStatus.textContent = "Scanning surface…";
@@ -1903,18 +1913,6 @@ renderer.setAnimationLoop((_, frame) => {
           obj.rotation.y = frozenRotations.get(obj) ?? 0;
         }
       });
-    }
-    if (hitTestSourceWall) {
-      const wallHits = frame.getHitTestResults(hitTestSourceWall);
-      if (wallHits.length > 0) {
-        const m = wallHits[0].getPose(refSpace).transform.matrix;
-        if (isVerticalSurface(m)) {
-          // Wall detected — expose for use
-          window._lastWallHit = { x: m[12], y: m[13], z: m[14], matrix: m };
-        }
-      } else {
-        window._lastWallHit = null;
-      }
     }
   }
 
