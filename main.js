@@ -1390,13 +1390,22 @@ let currentSurfaceType = "floor"; // "floor" | "wall" | "ceiling"
 
 // ─── Wall Detection: surface type from hit matrix ─────────────
 function getSurfaceTypeFromMatrix(matrix) {
-  // matrix[5] = Y component of the surface normal (column-major)
-  // Near  1 = horizontal facing up   → floor
-  // Near -1 = horizontal facing down → ceiling
-  // Near  0 = vertical               → wall
-  const normalY = matrix[5];
-  if (Math.abs(normalY) > 0.7) return normalY > 0 ? "floor" : "ceiling";
-  return "wall";
+  // The hit pose is column-major.
+  // Column 1 (indices 4,5,6) = local Y axis = surface normal direction.
+  const ny = matrix[5]; // Y component of normal
+  const nx = matrix[4]; // X component of normal
+  const nz = matrix[6]; // Z component of normal
+
+  // Compute how "vertical" the normal is
+  const horizontalStrength = Math.sqrt(nx * nx + nz * nz);
+  const verticalStrength = Math.abs(ny);
+
+  // Wall: normal is mostly horizontal (pointing sideways)
+  // Floor/ceiling: normal is mostly vertical (pointing up or down)
+  if (horizontalStrength > verticalStrength) {
+    return "wall";
+  }
+  return ny >= 0 ? "floor" : "ceiling";
 }
 
 // ─── Wall Detection: update UI when surface type changes ───────
@@ -1858,7 +1867,7 @@ renderer.setAnimationLoop((_, frame) => {
         session
           .requestHitTestSource({
             space: vs,
-            entityTypes: ["plane", "point", "mesh"], // ← detects walls + floor + ceiling
+            entityTypes: ["plane"], // ← plane only, gives correct normals
           })
           .then((src) => {
             hitTestSource = src;
