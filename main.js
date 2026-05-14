@@ -1046,6 +1046,83 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// ─── Help overlay ─────────────────────────────────────────────
+const helpOverlay = document.createElement("div");
+helpOverlay.id = "help-overlay";
+helpOverlay.style.cssText =
+  "position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);";
+helpOverlay.innerHTML = `
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;font-family:'DM Sans',sans-serif;">
+    <div style="background:#18534F;padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-radius:20px 20px 0 0;position:sticky;top:0;">
+      <div>
+        <div style="color:rgba(255,255,255,0.6);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">How to use</div>
+        <div style="color:#fff;font-size:20px;font-weight:600;">CasaDeco AR</div>
+      </div>
+      <button id="btn-help-close" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0;">✕</button>
+    </div>
+
+    <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+      ${[
+        [
+          "1",
+          "Start the AR session",
+          "Tap <b>Start AR Experience</b> and allow camera access when prompted.",
+        ],
+        [
+          "2",
+          "Scan the floor",
+          "Slowly move your phone until the scanning rings disappear and the reticle dot appears on the floor.",
+        ],
+        [
+          "3",
+          "Choose &amp; place furniture",
+          "Pick a product from the bottom rail, then tap <b>Place Furniture</b> to drop it on the detected surface.",
+        ],
+        [
+          "4",
+          "Rotate &amp; adjust",
+          "Hold <b>↺ / ↻</b> to spin the item. Tap any placed item to pick it up and reposition it.",
+        ],
+        [
+          "5",
+          "Manage your scene",
+          "<b>Undo</b> removes the last item · <b>Delete</b> removes a selected item · <b>Clear All</b> resets the room.",
+        ],
+      ]
+        .map(
+          ([n, title, desc]) => `
+        <div style="background:#f5f8f7;border-radius:14px;padding:14px;display:flex;align-items:flex-start;gap:12px;">
+          <div style="width:38px;height:38px;border-radius:50%;background:#18534F;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:15px;font-weight:700;">${n}</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#18534F;margin-bottom:3px;">${title}</div>
+            <div style="font-size:12.5px;color:rgba(24,83,79,0.65);line-height:1.5;">${desc}</div>
+          </div>
+        </div>`,
+        )
+        .join("")}
+    </div>
+
+    <div style="padding:0 16px 20px;">
+      <button id="btn-help-ok" style="width:100%;height:48px;border-radius:50px;background:#18534F;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.04em;">Got it!</button>
+    </div>
+  </div>`;
+document.body.appendChild(helpOverlay);
+
+function openHelp() {
+  helpOverlay.style.display = "flex";
+}
+function closeHelp() {
+  helpOverlay.style.display = "none";
+}
+
+helpOverlay.addEventListener("click", (e) => {
+  if (e.target === helpOverlay) closeHelp();
+});
+helpOverlay
+  .querySelector("#btn-help-close")
+  .addEventListener("click", closeHelp);
+helpOverlay.querySelector("#btn-help-ok").addEventListener("click", closeHelp);
+
 // ─── Top bar ─────────────────────────────────────────────────
 const uiTop = document.createElement("div");
 uiTop.id = "ui-top";
@@ -1054,6 +1131,7 @@ uiTop.innerHTML = `
     <div id="top-name">CasaDeco</div>
     <div id="top-status">Scanning…</div>
   </div>
+  <button id="btn-help" style="width:34px;height:34px;border-radius:50%;background:rgba(24,83,79,0.08);border:1.5px solid rgba(24,83,79,0.18);color:#18534F;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:8px;">?</button>
   <button id="btn-stop">Stop AR</button>`;
 document.body.appendChild(uiTop);
 
@@ -1708,6 +1786,8 @@ renderer.xr.addEventListener("sessionstart", () => {
     stopSpin();
     session.end();
   });
+
+  document.getElementById("btn-help").addEventListener("click", openHelp);
 
   session.addEventListener("end", () => {
     stopSpin();
