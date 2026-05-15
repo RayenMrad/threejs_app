@@ -381,7 +381,7 @@ helpBtn.id = "btn-help";
 helpBtn.textContent = "?";
 helpBtn.style.cssText = [
   "position:fixed",
-  "bottom:100%",
+  "bottom:320px",
   "right:20px",
   "transform:translateY(-100%)",
   "margin-bottom:12px",
